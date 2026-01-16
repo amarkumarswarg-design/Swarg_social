@@ -379,4 +379,46 @@
             document.getElementById('active-dp').src = activeChatAngel.dp;
             
             if(activeChatAngel.user === 'amar') {
-                doc
+                document.getElementById('active-name').innerHTML += ' <i class="fas fa-check-circle blue-tick-pro"></i>';
+            }
+
+            renderMessages();
+            if(window.innerWidth < 768) document.querySelector('.chat-window').classList.add('active');
+        }
+
+        function checkEnter(e) { if(e.key === 'Enter') sendMsg(); }
+
+        function sendMsg() {
+            const inp = document.getElementById('msg-input');
+            const txt = inp.value.trim();
+            if(!txt || !activeChatAngel) return;
+
+            let chats = fetchAll('sw_v4_chats');
+            chats.push({ from: me.user, to: activeChatAngel.user, text: txt, time: Date.now() });
+            saveAll('sw_v4_chats', chats);
+            
+            inp.value = "";
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const wall = document.getElementById('message-wall');
+            const chats = fetchAll('sw_v4_chats');
+            const thread = chats.filter(c => (c.from === me.user && c.to === activeChatAngel.user) || (c.from === activeChatAngel.user && c.to === me.user));
+
+            wall.innerHTML = thread.map(m => `
+                <div class="message-bubble ${m.from === me.user ? 'sent' : 'received'}">
+                    <p>${m.text}</p>
+                    <div class="flex items-center justify-end space-x-1 mt-1 opacity-50 text-[8px] font-black uppercase tracking-widest">
+                        Janat ✓✓
+                    </div>
+                </div>`).join('');
+            wall.scrollTop = wall.scrollHeight;
+        }
+
+        function closeChatMobile() { document.querySelector('.chat-window').classList.remove('active'); }
+        function logout() { localStorage.removeItem('sw_sess_v4'); location.reload(); }
+        function fullSystemReset() { if(confirm("Mita dein sab kuch?")) { localStorage.clear(); location.reload(); } }
+    </script>
+</body>
+</html>
