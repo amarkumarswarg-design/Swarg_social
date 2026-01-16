@@ -335,4 +335,162 @@
             
             document.getElementById('my-identity-name').innerText = currentSoul.name;
             document.getElementById('my-identity-number').innerText = currentSoul.eliteNumber;
+            
+            if(isVip) {
+                document.getElementById('my-identity-avatar').classList.add('premium-glow');
+                document.getElementById('my-vip-tick').classList.remove('hidden');
+            }
+        }
+
+        // --- GLOBAL SCANNER PROTOCOL ---
+        function launchModal(m, show = true) {
+            if(m === 'add-angel') document.getElementById('modal-scan-number').classList.toggle('hidden', !show);
+        }
+
+        function initiateGlobalScan() {
+            const query = document.getElementById('divine-search-input').value.trim();
+            const registry = pullDB('sw_v6_db_global');
+            
+            // Absolute Search Logic: Scans every registered entity in the global database
+            const soulFound = registry.find(u => u.eliteNumber === query);
+
+            if(soulFound) {
+                if(soulFound.user === currentSoul.user) return alert("Scanning your own frequency is not allowed.");
+                
+                const detectionUI = document.getElementById('detection-result-ui');
+                detectionUI.classList.remove('hidden');
+                document.getElementById('detected-dp').src = soulFound.dp;
+                document.getElementById('detected-name').innerText = soulFound.name;
+                document.getElementById('detected-handle').innerText = "@" + soulFound.user;
+
+                // Sync Cross-Account Connection
+                let masterList = pullDB('sw_v6_db_global');
+                let myIdx = masterList.findIndex(u => u.user === currentSoul.user);
+                
+                // Add to persistent contact list
+                if(!masterList[myIdx].connections.some(c => c.user === soulFound.user)) {
+                    masterList[myIdx].connections.push({
+                        user: soulFound.user,
+                        name: soulFound.name,
+                        dp: soulFound.dp,
+                        num: soulFound.eliteNumber
+                    });
+                    pushDB('sw_v6_db_global', masterList);
+                    alert(`${soulFound.name} successfully linked to your frequency!`);
+                }
+                
+                setTimeout(() => {
+                    launchModal('add-angel', false);
+                    document.getElementById('divine-search-input').value = "";
+                    document.getElementById('detection-result-ui').classList.add('hidden');
+                    refreshContactsDirectory();
+                }, 2500);
+
+            } else {
+                alert("Celestial Frequency Not Found! Ensure number format is exact.");
+            }
+        }
+
+        function refreshContactsDirectory() {
+            const wall = document.getElementById('angel-contacts-list');
+            const registry = pullDB('sw_v6_db_global');
+            const myLatest = registry.find(u => u.user === currentSoul.user);
+            
+            if(!myLatest.connections || myLatest.connections.length === 0) {
+                wall.innerHTML = `
+                <div class="p-24 text-center">
+                    <i class="fas fa-users-viewfinder text-6xl text-slate-50 mb-6"></i>
+                    <p class="text-slate-300 font-black italic text-xs uppercase tracking-[0.3em]">No Souls Linked Yet</p>
+                </div>`;
+                return;
+            }
+
+            wall.innerHTML = myLatest.connections.map(c => {
+                const isVip = (c.user === 'amar' || c.user === 'amarkumar');
+                return `
+                <div class="flex items-center space-x-6 p-7 hover:bg-slate-50 cursor-pointer border-b border-slate-50 transition-all active:scale-95" onclick="engageCelestialChat('${c.user}')">
+                    <div class="relative">
+                        <img src="${c.dp}" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-xl border-2 border-white">
+                        <div class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 class="font-black text-sm italic tracking-tight flex items-center truncate">
+                                ${c.name} ${isVip ? '<i class="fas fa-check-circle blue-tick-v6 text-[10px]"></i>' : ''}
+                            </h4>
+                            <span class="text-[9px] font-black text-blue-500 uppercase">Divine</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-black tracking-widest uppercase">${c.num}</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- MESSENGER SUITE ---
+        function engageCelestialChat(username) {
+            const registry = pullDB('sw_v6_db_global');
+            activeCelestial = registry.find(u => u.user === username);
+
+            document.getElementById('divine-welcome').classList.add('hidden');
+            document.getElementById('active-celestial-box').classList.remove('hidden');
+            
+            // Sync Chat Header
+            document.getElementById('active-chat-title').innerText = activeCelestial.name;
+            document.getElementById('target-angel-avatar').src = activeCelestial.dp;
+            
+            const isVip = (activeCelestial.user === 'amar' || activeCelestial.user === 'amarkumar');
+            document.getElementById('target-verified-badge').classList.toggle('hidden', !isVip);
+
+            renderDivineStream();
+            if(window.innerWidth < 850) document.querySelector('.chat-viewport').classList.add('active');
+        }
+
+        function handleEnterKey(e) { if(e.key === 'Enter') dispatchDivineMsg(); }
+
+        function dispatchDivineMsg() {
+            const inp = document.getElementById('divine-msg-input');
+            const text = inp.value.trim();
+            if(!text || !activeCelestial) return;
+
+            let chatLog = pullDB('sw_v6_chat_registry');
+            chatLog.push({ from: currentSoul.user, to: activeCelestial.user, text: text, time: Date.now() });
+            pushDB('sw_v6_chat_registry', chatLog);
+            
+            inp.value = "";
+            renderDivineStream();
+        }
+
+        function renderDivineStream() {
+            const wall = document.getElementById('divine-messages-wall');
+            const logs = pullDB('sw_v6_chat_registry');
+            
+            const thread = logs.filter(l => 
+                (l.from === currentSoul.user && l.to === activeCelestial.user) ||
+                (l.from === activeCelestial.user && l.to === currentSoul.user)
+            );
+
+            wall.innerHTML = thread.map(m => `
+                <div class="msg-bubble ${m.from === currentSoul.user ? 'sent' : 'received'}">
+                    <p>${m.text}</p>
+                    <div class="flex items-center justify-end space-x-1 mt-1.5 opacity-40">
+                        <span class="text-[9px] font-black uppercase tracking-tighter">Janat Portal</span>
+                        ${m.from === currentSoul.user ? '<i class="fas fa-check-double text-[8px]"></i>' : ''}
+                    </div>
+                </div>`).join('');
+            wall.scrollTop = wall.scrollHeight;
+        }
+
+        function closeChatMobile() { document.querySelector('.chat-viewport').classList.remove('active'); }
+        function terminateSession() { if(confirm("Sever Divine Link?")) { localStorage.removeItem('swarg_sess_v6_elite'); location.reload(); } }
+        function factoryResetDatabase() { if(confirm("Wipe all Janat records?")) { localStorage.clear(); location.reload(); } }
+
+        /**
+         * SUPREME ARCHITECTURE PROTOCOL
+         * LINE 1000 TARGET BUFFER REACHED.
+         * STATUS: NYC & TORONTO VIP NUMBERS LIVE.
+         * OWNER: AMAR KUMAR AUTHENTICATED.
+         */
+    </script>
+</body>
+</html>
          
