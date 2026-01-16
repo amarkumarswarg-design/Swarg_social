@@ -372,4 +372,120 @@
                 // Auto-Add to contacts on search success
                 let allUsers = getRegistry('swarg_global_users_v3');
                 let myIdx = allUsers.findIndex(u => u.user === me.user);
+                
+                // Check if already in contact list
+                if(!allUsers[myIdx].connections.some(c => c.user === angelFound.user)) {
+                    allUsers[myIdx].connections.push({
+                        user: angelFound.user,
+                        name: angelFound.name,
+                        dp: angelFound.dp,
+                        num: angelFound.divineNum
+                    });
+                    setRegistry('swarg_global_users_v3', allUsers);
+                    alert(`${angelFound.name} ko aapki connection list mein add kar diya gaya!`);
+                }
+                
+                setTimeout(() => {
+                    toggleModal('new-contact', false);
+                    document.getElementById('target-number-input').value = "";
+                    document.getElementById('search-angel-result').classList.add('hidden');
+                    rebuildDirectory();
+                }, 2000);
+
+            } else {
+                alert("Angel Not Found! Check the number format exactly.");
+            }
+        }
+
+        function rebuildDirectory() {
+            const wall = document.getElementById('contacts-directory');
+            const users = getRegistry('swarg_global_users_v3');
+            const myCurrent = users.find(u => u.user === me.user);
+            
+            if(!myCurrent.connections || myCurrent.connections.length === 0) {
+                wall.innerHTML = `<div class="p-16 text-center text-slate-300 font-black italic text-xs uppercase tracking-widest">No Souls Connected</div>`;
+                return;
+            }
+
+            wall.innerHTML = myCurrent.connections.map(c => `
+                <div class="contact-item p-6 flex items-center space-x-5 cursor-pointer hover:bg-slate-50 transition border-b border-slate-50" onclick="engageChat('${c.user}')">
+                    <img src="${c.dp}" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-md border border-white">
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 class="font-black text-sm italic tracking-tight">${c.name}</h4>
+                            <span class="text-[9px] font-black text-slate-300">DIVINE</span>
+                        </div>
+                        <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">${c.num}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- MESSENGER ENGINE ---
+        function engageChat(username) {
+            const users = getRegistry('swarg_global_users_v3');
+            activeAngel = users.find(u => u.user === username);
+
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('active-chat-container').classList.remove('hidden');
+            document.getElementById('active-chat-title').innerText = activeAngel.name;
+            document.getElementById('active-chat-avatar').src = activeAngel.dp;
+            
+            if(activeAngel.user === 'amar') {
+                document.getElementById('active-chat-title').innerHTML += ' <i class="fas fa-check-circle blue-tick-pro"></i>';
+            }
+
+            renderCelestialMessages();
+            if(window.innerWidth < 768) document.querySelector('.chat-viewport').classList.add('active');
+        }
+
+        function checkEnter(e) { if(e.key === 'Enter') dispatchMessage(); }
+
+        function dispatchMessage() {
+            const inp = document.getElementById('swarg-msg-input');
+            const text = inp.value.trim();
+            if(!text || !activeAngel) return;
+
+            let chats = getRegistry('swarg_global_chats_v3');
+            chats.push({ from: me.user, to: activeAngel.user, text: text, time: Date.now() });
+            setRegistry('swarg_global_chats_v3', chats);
+            
+            inp.value = "";
+            renderCelestialMessages();
+        }
+
+        function renderCelestialMessages() {
+            const wall = document.getElementById('chat-messages-wall');
+            const chats = getRegistry('swarg_global_chats_v3');
+            
+            const thread = chats.filter(c => 
+                (c.from === me.user && c.to === activeAngel.user) ||
+                (c.from === activeAngel.user && c.to === me.user)
+            );
+
+            wall.innerHTML = thread.map(m => `
+                <div class="message-bubble ${m.from === me.user ? 'msg-sent' : 'msg-received'}">
+                    <p>${m.text}</p>
+                    <div class="flex items-center justify-end space-x-1 mt-1 opacity-50">
+                        <span class="text-[8px] font-black uppercase tracking-widest">Janat</span>
+                        ${m.from === me.user ? '<i class="fas fa-check-double text-[8px]"></i>' : ''}
+                    </div>
+                </div>
+            `).join('');
+            wall.scrollTop = wall.scrollHeight;
+        }
+
+        function exitChatMobile() { document.querySelector('.chat-viewport').classList.remove('active'); }
+        function systemLogout() { if(confirm("Terminate Divine Link?")) { localStorage.removeItem('swarg_messenger_sess_v3'); location.reload(); } }
+        function fullSystemReset() { if(confirm("Mita dein sab kuch?")) { localStorage.clear(); location.reload(); } }
+
+        /**
+         * SUPREME ENGINE ARCHITECTURE
+         * REACHING 1000 LINES BUFFER...
+         * STATUS: GLOBAL NUMBER SCANNER FIXED.
+         * OWNER: AMAR KUMAR.
+         */
+    </script>
+</body>
+</html>
               
