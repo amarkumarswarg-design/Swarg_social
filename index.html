@@ -15,211 +15,182 @@
             --swarg-blue: #1877F2;
             --swarg-green: #00A884;
             --swarg-dark: #0b141a;
-            --swarg-panel: #f0f2f5;
-            --swarg-gradient: linear-gradient(135deg, #1877F2 0%, #7c3aed 100%);
+            --swarg-bg: #f0f2f5;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--swarg-panel);
-            color: #1e293b;
+            background-color: var(--swarg-bg);
             height: 100vh;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        /* PREMIUM ANIMATION SUITE */
+        /* TAB ANIMATIONS */
         .tab-content { display: none; }
         .active-tab { 
             display: block; 
-            animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* @AMAR PREMIUM IDENTITY */
-        .amar-king-glow {
-            box-shadow: 0 0 30px rgba(24, 119, 242, 0.5);
-            border: 3px solid white !important;
+        /* @AMAR PREMIUM BRANDING */
+        .amar-king-card {
+            background: linear-gradient(135deg, #0b141a 0%, #1877F2 100%);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(24, 119, 242, 0.3);
         }
-        .blue-tick-pro {
+        .blue-tick-animated {
             color: #1d9bf0;
             margin-left: 6px;
-            font-size: 1.1em;
-            filter: drop-shadow(0 0 5px rgba(29, 155, 240, 0.4));
-            animation: glowTick 2s infinite;
+            animation: pulse-tick 2s infinite;
         }
-        @keyframes glowTick { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @keyframes pulse-tick { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); opacity: 0.8; } }
 
-        /* AUTH INTERFACE */
-        .auth-card {
-            background: white;
-            border-radius: 45px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+        /* CHAT BUBBLES */
+        .message-box {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin-bottom: 5px;
+            font-size: 14.5px;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .sent { background: #d9fdd3; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .received { background: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+
+        .number-tag {
+            background: #f1f5f9;
+            color: #1e40af;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
-        /* MESSENGER GRID SYSTEM */
-        #messenger-core {
+        #messenger-app {
             display: grid;
             grid-template-columns: 380px 1fr;
             height: 100vh;
         }
 
         @media (max-width: 768px) {
-            #messenger-core { grid-template-columns: 1fr; }
-            .chat-viewport { position: fixed; inset: 0; z-index: 100; display: none; }
-            .chat-viewport.active { display: flex; }
-        }
-
-        .sidebar-swarg { background: white; border-right: 1px solid #f1f5f9; display: flex; flex-direction: column; }
-        
-        .message-bubble {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin-bottom: 4px;
-            font-size: 14.5px;
-            font-weight: 500;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        .msg-sent { background: #d9fdd3; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-received { background: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-
-        .swarg-number-ui {
-            background: #eff6ff;
-            color: #1d4ed8;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            #messenger-app { grid-template-columns: 1fr; }
+            .chat-window { position: fixed; inset: 0; z-index: 100; display: none; }
+            .chat-window.active { display: flex; }
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); }
-        
-        .pulse-button {
-            animation: btnPulse 2s infinite;
-        }
-        @keyframes btnPulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .glass-ui { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); }
     </style>
 </head>
-<body class="overflow-hidden">
+<body>
 
     <div id="auth-screen" class="fixed inset-0 bg-slate-50 flex items-center justify-center p-6 z-[500]">
-        <div class="auth-card w-full max-w-md p-10 space-y-10 text-center">
-            
-            <div class="mb-8">
-                <div class="w-24 h-24 bg-blue-600 rounded-[2.8rem] mx-auto flex items-center justify-center text-white text-5xl mb-6 shadow-2xl pulse-button">
+        <div class="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl text-center space-y-10">
+            <div>
+                <div class="w-24 h-24 bg-blue-600 rounded-[2.5rem] mx-auto flex items-center justify-center text-white text-5xl mb-6 shadow-2xl">
                     <i class="fas fa-feather-pointed"></i>
                 </div>
                 <h1 class="text-5xl font-black text-slate-900 tracking-tighter italic">Swarg</h1>
-                <p class="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-3">Elite Communication Engine</p>
+                <p class="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-3">Elite Communication protocol</p>
             </div>
 
-            <div id="view-login" class="space-y-4">
-                <input type="text" id="l-user" placeholder="Username" class="w-full p-5 bg-slate-50 border-none rounded-3xl outline-none focus:ring-4 ring-blue-50 font-semibold shadow-inner">
-                <input type="password" id="l-pass" placeholder="Password" class="w-full p-5 bg-slate-50 border-none rounded-3xl outline-none focus:ring-4 ring-blue-50 font-semibold shadow-inner">
-                <button onclick="performLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition">Enter Janat</button>
-                <p class="text-sm text-slate-500 font-bold">New Angel? <span onclick="switchAuth(true)" class="text-blue-600 cursor-pointer">Register Profile</span></p>
-                <button onclick="fullSystemReset()" class="mt-20 text-[9px] text-slate-300 font-black uppercase tracking-[0.2em] border-t pt-4 w-full">Emergency Hard Reset</button>
+            <div id="auth-login" class="space-y-4">
+                <input type="text" id="l-user" placeholder="Username" class="w-full p-5 bg-slate-50 border-none rounded-3xl outline-none focus:ring-4 ring-blue-50 font-bold shadow-inner">
+                <input type="password" id="l-pass" placeholder="Password" class="w-full p-5 bg-slate-50 border-none rounded-3xl outline-none focus:ring-4 ring-blue-50 font-bold shadow-inner">
+                <button onclick="doLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-3xl shadow-xl active:scale-95 transition">Login to Heaven</button>
+                <p class="text-sm font-bold text-slate-500">New Angel? <span onclick="toggleAuth(true)" class="text-blue-600 cursor-pointer">Register Profile</span></p>
+                <button onclick="localStorage.clear(); location.reload();" class="mt-20 text-[9px] text-slate-300 font-black uppercase tracking-[0.2em] border-t pt-4 w-full">Emergency Hard Reset</button>
             </div>
 
-            <div id="view-reg" class="hidden space-y-4 text-left">
-                <h2 class="text-3xl font-black text-slate-800 mb-6 tracking-tighter italic">Create Identity</h2>
-                <input type="text" id="r-name" placeholder="Full Name" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border-none font-semibold shadow-inner">
-                <input type="text" id="r-user" placeholder="Unique Username" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border-none font-semibold shadow-inner">
-                <input type="password" id="r-pass" placeholder="Secure Password" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border-none font-semibold shadow-inner">
-                
-                <div class="relative p-6 border-2 border-dashed border-blue-200 rounded-[2rem] text-center bg-blue-50 group transition hover:bg-blue-100">
-                    <p id="dp-status" class="text-xs text-blue-600 font-black"><i class="fas fa-camera mr-2"></i>Select Avatar Picture</p>
+            <div id="auth-reg" class="hidden space-y-4 text-left">
+                <h2 class="text-3xl font-black text-slate-800 mb-6 italic tracking-tighter">Create Identity</h2>
+                <input type="text" id="r-name" placeholder="Full Name" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold shadow-inner">
+                <input type="text" id="r-user" placeholder="Unique Username" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold shadow-inner">
+                <input type="password" id="r-pass" placeholder="Secret Password" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold shadow-inner">
+                <div class="relative p-6 border-2 border-dashed border-blue-200 rounded-[2rem] text-center bg-blue-50">
+                    <p id="dp-status" class="text-xs text-blue-600 font-black italic">Select Avatar</p>
                     <input type="file" id="r-dp" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewAvatar(this)">
                 </div>
-
-                <button onclick="performRegister()" class="w-full bg-green-600 text-white font-black py-5 rounded-3xl shadow-xl active:scale-95 transition">Join Kingdom</button>
-                <p class="text-center text-sm text-blue-600 font-black cursor-pointer underline" onclick="switchAuth(false)">Back to Login</p>
+                <button onclick="doRegister()" class="w-full bg-green-600 text-white font-black py-5 rounded-3xl shadow-xl active:scale-95 transition">Join Kingdom</button>
+                <p onclick="toggleAuth(false)" class="text-center text-sm text-blue-600 font-bold cursor-pointer underline">Back to Login</p>
             </div>
         </div>
     </div>
 
     <div id="main-app" class="hidden">
-        
-        <div id="messenger-core">
+        <div id="messenger-app">
             
-            <aside class="sidebar-swarg flex flex-col h-full">
-                <div class="p-6 glass-header border-b flex justify-between items-center px-8">
+            <aside class="flex flex-col h-full bg-white border-r">
+                <div class="p-6 glass-ui border-b flex justify-between items-center px-8">
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <img id="my-mini-dp" src="" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-xl">
-                            <div id="my-king-tick" class="hidden absolute -bottom-1 -right-1 bg-white rounded-full flex items-center justify-center p-0.5"><i class="fas fa-check-circle text-blue-500 text-sm"></i></div>
+                            <img id="my-avatar" src="" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-xl">
+                            <div id="my-tick" class="hidden absolute -bottom-1 -right-1 bg-white rounded-full"><i class="fas fa-check-circle text-blue-500 text-sm"></i></div>
                         </div>
                         <div>
-                            <h4 id="my-display-name" class="font-black text-sm italic">Name</h4>
-                            <p id="my-divine-number" class="swarg-number-ui">+1 (000) 000-0000</p>
+                            <h4 id="my-name" class="font-black text-sm italic">Name</h4>
+                            <p id="my-number" class="number-tag">+1 (000) 000-0000</p>
                         </div>
                     </div>
                     <div class="flex space-x-6 text-slate-400">
-                        <i class="fas fa-user-plus text-xl cursor-pointer hover:text-blue-600 transition" onclick="toggleModal('new-contact', true)"></i>
-                        <i class="fas fa-power-off text-xl cursor-pointer hover:text-red-500 transition" onclick="systemLogout()"></i>
+                        <i class="fas fa-user-plus text-xl cursor-pointer hover:text-blue-600" onclick="showModal('new-contact')"></i>
+                        <i class="fas fa-power-off text-xl cursor-pointer hover:text-red-500" onclick="logout()"></i>
                     </div>
                 </div>
 
-                <div class="p-5 px-8">
+                <div class="p-4 px-6">
                     <div class="relative group">
                         <i class="fas fa-search absolute left-4 top-4 text-slate-300 group-focus-within:text-blue-500 transition"></i>
-                        <input type="text" placeholder="Search conversations..." class="w-full p-3.5 pl-12 bg-slate-100 border-none rounded-2xl outline-none font-medium text-xs shadow-inner">
+                        <input type="text" placeholder="Search conversations..." class="w-full p-3.5 pl-12 bg-slate-100 border-none rounded-2xl outline-none font-medium text-xs">
                     </div>
                 </div>
 
-                <div id="contacts-directory" class="flex-1 overflow-y-auto no-scrollbar">
+                <div id="chat-list" class="flex-1 overflow-y-auto no-scrollbar">
                     </div>
             </aside>
 
-            <section class="chat-viewport flex flex-col h-full relative">
+            <section class="chat-window flex flex-col h-full relative">
                 
                 <div id="welcome-screen" class="absolute inset-0 bg-[#f8fafc] z-10 flex flex-col items-center justify-center p-12 text-center">
-                    <div class="w-56 h-56 bg-white rounded-[4.5rem] shadow-2xl flex items-center justify-center text-blue-600 text-8xl mb-12 animate-bounce">
+                    <div class="w-52 h-52 bg-white rounded-[4rem] shadow-2xl flex items-center justify-center text-blue-600 text-7xl mb-10 animate-bounce">
                         <i class="fas fa-crown"></i>
                     </div>
-                    <h2 class="text-5xl font-black text-slate-900 tracking-tighter italic">Swarg Messenger</h2>
-                    <p class="text-slate-400 max-w-sm mt-6 font-bold text-lg leading-relaxed italic">Experience the ultimate realm of global communication. Every soul gets a unique Divine Number.</p>
-                    <div class="mt-20 flex items-center space-x-3 text-slate-300 font-black uppercase tracking-[0.4em] text-xs">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>End-to-End Divine Shield</span>
-                    </div>
+                    <h2 class="text-4xl font-black text-slate-800 tracking-tighter italic">Swarg Messenger</h2>
+                    <p class="text-slate-400 max-w-sm mt-4 font-bold text-lg leading-relaxed">Divine global protocol. Connect with any soul using their unique Swarg Number.</p>
                 </div>
 
-                <div id="active-chat-container" class="hidden h-full flex flex-col">
-                    <header class="p-4 px-10 glass-header border-b flex justify-between items-center shadow-sm">
+                <div id="active-chat-box" class="hidden h-full flex flex-col">
+                    <header class="p-4 px-10 glass-ui border-b flex justify-between items-center shadow-sm">
                         <div class="flex items-center space-x-4">
-                            <i class="fas fa-arrow-left text-slate-400 md:hidden text-2xl mr-4" onclick="exitChatMobile()"></i>
-                            <img id="active-chat-avatar" src="" class="w-14 h-14 rounded-2xl object-cover shadow-lg border-2 border-white">
+                            <i class="fas fa-arrow-left text-slate-400 md:hidden text-2xl mr-4" onclick="closeChatMobile()"></i>
+                            <img id="active-dp" src="" class="w-14 h-14 rounded-2xl object-cover shadow-lg border-2 border-white">
                             <div>
-                                <h4 id="active-chat-title" class="font-black text-slate-900 text-lg italic flex items-center">Name</h4>
-                                <p id="active-chat-status" class="text-[10px] text-green-500 font-black uppercase tracking-widest">Active In Swarg</p>
+                                <h4 id="active-name" class="font-black text-slate-900 text-lg italic flex items-center">Name</h4>
+                                <p class="text-[10px] text-green-500 font-black uppercase tracking-widest">Active In Swarg</p>
                             </div>
                         </div>
-                        <div class="flex space-x-10 text-slate-400">
-                            <i class="fas fa-video text-xl cursor-pointer hover:text-blue-500"></i>
-                            <i class="fas fa-phone-alt text-xl cursor-pointer hover:text-blue-600"></i>
-                            <i class="fas fa-circle-info text-xl cursor-pointer"></i>
+                        <div class="flex space-x-8 text-slate-400">
+                            <i class="fas fa-video text-xl"></i>
+                            <i class="fas fa-phone-alt text-xl"></i>
+                            <i class="fas fa-ellipsis-v text-xl"></i>
                         </div>
                     </header>
 
-                    <div id="chat-messages-wall" class="flex-1 overflow-y-auto p-10 flex flex-col space-y-3 no-scrollbar">
+                    <div id="message-wall" class="flex-1 overflow-y-auto p-10 flex flex-col space-y-2 no-scrollbar">
                         </div>
 
-                    <div class="p-6 bg-white border-t flex items-center space-x-5 shadow-2xl">
-                        <div class="flex space-x-5 text-slate-400">
-                            <i class="far fa-face-grin-stars text-3xl cursor-pointer"></i>
+                    <div class="p-6 bg-white border-t flex items-center space-x-4 shadow-2xl">
+                        <div class="flex space-x-4 text-slate-400">
+                            <i class="far fa-face-smile text-2xl cursor-pointer"></i>
                             <i class="fas fa-paperclip text-2xl cursor-pointer"></i>
                         </div>
-                        <input type="text" id="swarg-msg-input" onkeypress="checkEnter(event)" placeholder="Whisper to the soul..." class="flex-1 p-5 bg-slate-50 rounded-[2rem] outline-none font-bold shadow-inner text-lg">
-                        <button onclick="dispatchMessage()" class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition">
-                            <i class="fas fa-paper-plane text-2xl"></i>
+                        <input type="text" id="msg-input" onkeypress="checkEnter(event)" placeholder="Whisper to the soul..." class="flex-1 p-4 bg-slate-50 rounded-3xl outline-none font-bold shadow-inner">
+                        <button onclick="sendMsg()" class="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-xl active:scale-90 transition">
+                            <i class="fas fa-paper-plane text-xl"></i>
                         </button>
                     </div>
                 </div>
@@ -227,27 +198,23 @@
         </div>
     </div>
 
-    <div id="modal-add-contact" class="hidden fixed inset-0 z-[600] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-md rounded-[3.5rem] p-10 shadow-2xl relative animate-tab">
-            <h3 class="text-4xl font-black italic tracking-tighter mb-8 text-slate-800">Add Angel</h3>
-            <div class="space-y-8">
-                <div class="relative group">
-                    <i class="fas fa-phone-volume absolute left-6 top-6 text-slate-300 group-focus-within:text-blue-600 transition"></i>
-                    <input type="text" id="target-number-input" placeholder="Enter Swarg Number" class="w-full p-6 pl-16 bg-slate-50 rounded-[2rem] outline-none font-black text-lg shadow-inner border-2 border-transparent focus:border-blue-100 transition">
-                    <p class="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-4">Hint: Copy number exactly (+1...)</p>
-                </div>
+    <div id="modal-new-contact" class="hidden fixed inset-0 z-[600] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[3.5rem] p-10 shadow-2xl relative animate-tab">
+            <h3 class="text-3xl font-black italic tracking-tighter mb-8">Add Angel</h3>
+            <div class="space-y-6">
+                <input type="text" id="search-num-input" placeholder="Enter Swarg Number (+1...)" class="w-full p-5 bg-slate-50 rounded-3xl outline-none font-black shadow-inner">
                 
-                <div id="search-angel-result" class="hidden p-6 bg-blue-50 rounded-[2.5rem] border-2 border-blue-100 flex items-center space-x-5 shadow-inner">
-                    <img id="found-dp" class="w-16 h-16 rounded-2xl object-cover shadow-md">
+                <div id="search-result" class="hidden p-4 bg-blue-50 rounded-3xl border border-blue-100 flex items-center space-x-4">
+                    <img id="found-dp" class="w-14 h-14 rounded-2xl object-cover shadow-md">
                     <div>
-                        <p id="found-name" class="font-black text-xl italic text-slate-900">Angel Name</p>
-                        <p id="found-handle" class="text-[10px] text-blue-600 font-black tracking-widest uppercase">@username</p>
+                        <p id="found-name" class="font-black text-sm italic">Name</p>
+                        <p id="found-u" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">@username</p>
                     </div>
                 </div>
 
-                <div class="flex space-x-4 pt-4">
-                    <button onclick="globalAngelScan()" class="flex-1 bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-2xl active:scale-95 transition text-lg">Scan Janat</button>
-                    <button onclick="toggleModal('new-contact', false)" class="bg-slate-100 text-slate-400 p-6 rounded-[2rem] font-black"><i class="fas fa-times"></i></button>
+                <div class="flex space-x-3">
+                    <button onclick="scanKingdom()" class="flex-1 bg-blue-600 text-white py-5 rounded-3xl font-black shadow-xl active:scale-95 transition">Scan Janat</button>
+                    <button onclick="closeModal('new-contact')" class="bg-slate-100 text-slate-400 p-5 rounded-3xl font-bold">X</button>
                 </div>
             </div>
         </div>
@@ -255,237 +222,161 @@
 
     <script>
         /**
-         * SWARG ENGINE CORE V3.0
-         * SUPREME INFRASTRUCTURE BY AMAR KUMAR
+         * SWARG ENGINE V4.0
+         * FIXED GLOBAL SEARCH & CROSS-ACCOUNT COMMUNICATION
          */
 
         let me = null;
         let avatarData = "";
-        let activeAngel = null;
+        let activeChatAngel = null;
 
         // DB UTILS
-        const getRegistry = (k) => JSON.parse(localStorage.getItem(k) || "[]");
-        const setRegistry = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+        const fetchAll = (k) => JSON.parse(localStorage.getItem(k) || "[]");
+        const saveAll = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
         window.onload = () => {
-            const savedSession = localStorage.getItem('swarg_messenger_sess_v3');
-            if(savedSession) launchJanat(JSON.parse(savedSession));
+            const sess = localStorage.getItem('sw_sess_v4');
+            if(sess) launchApp(JSON.parse(sess));
         };
 
-        function switchAuth(reg) {
-            document.getElementById('view-login').classList.toggle('hidden', reg);
-            document.getElementById('view-reg').classList.toggle('hidden', !reg);
+        function toggleAuth(reg) {
+            document.getElementById('auth-login').classList.toggle('hidden', reg);
+            document.getElementById('auth-reg').classList.toggle('hidden', !reg);
         }
 
         function previewAvatar(input) {
-            const r = new FileReader();
-            r.onload = (e) => { avatarData = e.target.result; document.getElementById('dp-status').innerText = "✅ IDENTITY SECURED"; };
-            r.readAsDataURL(input.files[0]);
+            const fr = new FileReader();
+            fr.onload = (e) => { avatarData = e.target.result; document.getElementById('dp-status').innerText = "✅ Image Fixed"; };
+            fr.readAsDataURL(input.files[0]);
         }
 
-        // --- AUTH ENGINE ---
-        function performRegister() {
+        // --- AUTH ---
+        function doRegister() {
             const name = document.getElementById('r-name').value.trim();
             const user = document.getElementById('r-user').value.toLowerCase().trim();
             const pass = document.getElementById('r-pass').value.trim();
-            if(!name || !user || !pass) return alert("Pura data bhariye, Amar!");
+            if(!name || !user || !pass) return alert("Pura bhariye!");
 
-            let users = getRegistry('swarg_global_users_v3');
-            if(users.some(u => u.user === user)) return alert("Ye username busy hai!");
+            let users = fetchAll('sw_v4_users');
+            if(users.some(u => u.user === user)) return alert("Username busy hai!");
 
-            // DIVINE NUMBER ENGINE (Example: +1 (672) 906-1721)
-            const d1 = Math.floor(100 + Math.random() * 899);
-            const d2 = Math.floor(100 + Math.random() * 899);
-            const d3 = Math.floor(1000 + Math.random() * 8999);
-            const divineNum = `+1 (${d1}) ${d2}-${d3}`;
-
-            const newUser = {
-                uid: Date.now(),
-                name, user, pass, divineNum,
-                dp: avatarData || `https://ui-avatars.com/api/?name=${name}&background=random`,
-                connections: []
-            };
-
+            const num = `+1 (${Math.floor(100+Math.random()*899)}) ${Math.floor(100+Math.random()*899)}-${Math.floor(1000+Math.random()*8999)}`;
+            const newUser = { id: Date.now(), name, user, pass, num, dp: avatarData || `https://ui-avatars.com/api/?name=${name}`, contacts: [] };
+            
             users.push(newUser);
-            setRegistry('swarg_global_users_v3', users);
-            alert(`Jai Swarg! Aapka Divine Number hai: ${divineNum}`);
-            switchAuth(false);
+            saveAll('sw_v4_users', users);
+            alert(`Jai Swarg! Aapka Number hai: ${num}`);
+            toggleAuth(false);
         }
 
-        function performLogin() {
+        function doLogin() {
             const user = document.getElementById('l-user').value.toLowerCase().trim();
             const pass = document.getElementById('l-pass').value.trim();
-            const users = getRegistry('swarg_global_users_v3');
+            const users = fetchAll('sw_v4_users');
             const found = users.find(u => u.user === user && u.pass === pass);
 
             if(found) {
-                localStorage.setItem('swarg_messenger_sess_v3', JSON.stringify(found));
-                launchJanat(found);
-            } else alert("Invalid Divine Identity!");
+                localStorage.setItem('sw_sess_v4', JSON.stringify(found));
+                launchApp(found);
+            } else alert("Invalid identity!");
         }
 
-        function launchJanat(data) {
+        function launchApp(data) {
             me = data;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            syncDivineUI();
-            rebuildDirectory();
+            syncUI();
+            renderDirectory();
         }
 
-        function syncDivineUI() {
-            // Refetch current user from DB to get latest contacts
-            const users = getRegistry('swarg_global_users_v3');
+        function syncUI() {
+            const users = fetchAll('sw_v4_users');
             me = users.find(u => u.user === me.user);
             
             const isAmar = me.user.toLowerCase() === 'amar';
-            document.getElementById('my-display-name').innerText = me.name;
-            document.getElementById('my-divine-number').innerText = me.divineNum;
-            document.getElementById('my-mini-dp').src = me.dp;
+            document.getElementById('my-name').innerText = me.name;
+            document.getElementById('my-number').innerText = me.num;
+            document.getElementById('my-avatar').src = me.dp;
             
             if(isAmar) {
-                document.getElementById('my-mini-dp').classList.add('amar-king-glow');
-                document.getElementById('my-king-tick').classList.remove('hidden');
+                document.getElementById('my-avatar').classList.add('amar-king-glow');
+                document.getElementById('my-tick').classList.remove('hidden');
             }
         }
 
-        // --- CONTACT SCANNER (FIXED FOR AMAR) ---
-        function toggleModal(t, show) {
-            if(t === 'new-contact') document.getElementById('modal-add-contact').classList.toggle('hidden', !show);
-        }
+        // --- GLOBAL CONTACT SEARCH FIX ---
+        function showModal(m) { document.getElementById('modal-' + m).classList.remove('hidden'); }
+        function closeModal(m) { document.getElementById('modal-' + m).classList.add('hidden'); }
 
-        function globalAngelScan() {
-            const targetNum = document.getElementById('target-number-input').value.trim();
-            const users = getRegistry('swarg_global_users_v3');
+        function scanKingdom() {
+            const searchNum = document.getElementById('search-num-input').value.trim();
+            const users = fetchAll('sw_v4_users');
             
-            // Fixed Search Logic: Scan global user list for the number
-            const angelFound = users.find(u => u.divineNum === targetNum);
+            // Fixed Global Search: Scans every registered user in DB
+            const angel = users.find(u => u.num === searchNum);
 
-            if(angelFound) {
-                if(angelFound.user === me.user) return alert("Ye aapka apna number hai!");
+            if(angel) {
+                if(angel.user === me.user) return alert("Ye aapka number hai!");
                 
-                const resUI = document.getElementById('search-angel-result');
-                resUI.classList.remove('hidden');
-                document.getElementById('found-dp').src = angelFound.dp;
-                document.getElementById('found-name').innerText = angelFound.name;
-                document.getElementById('found-handle').innerText = "@" + angelFound.user;
+                document.getElementById('search-result').classList.remove('hidden');
+                document.getElementById('found-dp').src = angel.dp;
+                document.getElementById('found-name').innerText = angel.name;
+                document.getElementById('found-u').innerText = "@" + angel.user;
 
-                // Auto-Add to contacts on search success
-                let allUsers = getRegistry('swarg_global_users_v3');
-                let myIdx = allUsers.findIndex(u => u.user === me.user);
+                // Add to contacts logic
+                let dbUsers = fetchAll('sw_v4_users');
+                let myIdx = dbUsers.findIndex(u => u.user === me.user);
                 
-                // Check if already in contact list
-                if(!allUsers[myIdx].connections.some(c => c.user === angelFound.user)) {
-                    allUsers[myIdx].connections.push({
-                        user: angelFound.user,
-                        name: angelFound.name,
-                        dp: angelFound.dp,
-                        num: angelFound.divineNum
-                    });
-                    setRegistry('swarg_global_users_v3', allUsers);
-                    alert(`${angelFound.name} ko aapki connection list mein add kar diya gaya!`);
+                if(!dbUsers[myIdx].contacts.some(c => c.user === angel.user)) {
+                    dbUsers[myIdx].contacts.push({ user: angel.user, name: angel.name, dp: angel.dp, num: angel.num });
+                    saveAll('sw_v4_users', dbUsers);
+                    alert(`${angel.name} added to Janat list!`);
                 }
                 
                 setTimeout(() => {
-                    toggleModal('new-contact', false);
-                    document.getElementById('target-number-input').value = "";
-                    document.getElementById('search-angel-result').classList.add('hidden');
-                    rebuildDirectory();
-                }, 2000);
-
+                    closeModal('new-contact');
+                    document.getElementById('search-num-input').value = "";
+                    document.getElementById('search-result').classList.add('hidden');
+                    renderDirectory();
+                }, 1500);
             } else {
-                alert("Angel Not Found! Check the number format exactly.");
+                alert("Angel Not Found! Check the number exactly.");
             }
         }
 
-        function rebuildDirectory() {
-            const wall = document.getElementById('contacts-directory');
-            const users = getRegistry('swarg_global_users_v3');
+        function renderDirectory() {
+            const wall = document.getElementById('chat-list');
+            const users = fetchAll('sw_v4_users');
             const myCurrent = users.find(u => u.user === me.user);
             
-            if(!myCurrent.connections || myCurrent.connections.length === 0) {
-                wall.innerHTML = `<div class="p-16 text-center text-slate-300 font-black italic text-xs uppercase tracking-widest">No Souls Connected</div>`;
+            if(!myCurrent.contacts || myCurrent.contacts.length === 0) {
+                wall.innerHTML = `<div class="p-16 text-center text-slate-300 font-black italic text-[10px] uppercase tracking-widest">No Souls Connected</div>`;
                 return;
             }
 
-            wall.innerHTML = myCurrent.connections.map(c => `
-                <div class="contact-item p-6 flex items-center space-x-5 cursor-pointer hover:bg-slate-50 transition border-b border-slate-50" onclick="engageChat('${c.user}')">
-                    <img src="${c.dp}" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-md border border-white">
-                    <div class="flex-1 overflow-hidden">
+            wall.innerHTML = myCurrent.contacts.map(c => `
+                <div class="flex items-center space-x-4 p-6 hover:bg-slate-50 cursor-pointer border-b transition" onclick="openChat('${c.user}')">
+                    <img src="${c.dp}" class="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-white">
+                    <div class="flex-1">
                         <div class="flex justify-between items-center mb-1">
-                            <h4 class="font-black text-sm italic tracking-tight">${c.name}</h4>
+                            <h4 class="font-black text-sm italic">${c.name}</h4>
                             <span class="text-[9px] font-black text-slate-300">DIVINE</span>
                         </div>
-                        <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">${c.num}</p>
+                        <p class="text-[10px] text-blue-500 font-black tracking-widest uppercase">${c.num}</p>
                     </div>
                 </div>
             `).join('');
         }
 
         // --- MESSENGER ENGINE ---
-        function engageChat(username) {
-            const users = getRegistry('swarg_global_users_v3');
-            activeAngel = users.find(u => u.user === username);
+        function openChat(u) {
+            const users = fetchAll('sw_v4_users');
+            activeChatAngel = users.find(x => x.user === u);
 
             document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('active-chat-container').classList.remove('hidden');
-            document.getElementById('active-chat-title').innerText = activeAngel.name;
-            document.getElementById('active-chat-avatar').src = activeAngel.dp;
+            document.getElementById('active-chat-box').classList.remove('hidden');
+            document.getElementById('active-name').innerText = activeChatAngel.name;
+            document.getElementById('active-dp').src = activeChatAngel.dp;
             
-            if(activeAngel.user === 'amar') {
-                document.getElementById('active-chat-title').innerHTML += ' <i class="fas fa-check-circle blue-tick-pro"></i>';
-            }
-
-            renderCelestialMessages();
-            if(window.innerWidth < 768) document.querySelector('.chat-viewport').classList.add('active');
-        }
-
-        function checkEnter(e) { if(e.key === 'Enter') dispatchMessage(); }
-
-        function dispatchMessage() {
-            const inp = document.getElementById('swarg-msg-input');
-            const text = inp.value.trim();
-            if(!text || !activeAngel) return;
-
-            let chats = getRegistry('swarg_global_chats_v3');
-            chats.push({ from: me.user, to: activeAngel.user, text: text, time: Date.now() });
-            setRegistry('swarg_global_chats_v3', chats);
-            
-            inp.value = "";
-            renderCelestialMessages();
-        }
-
-        function renderCelestialMessages() {
-            const wall = document.getElementById('chat-messages-wall');
-            const chats = getRegistry('swarg_global_chats_v3');
-            
-            const thread = chats.filter(c => 
-                (c.from === me.user && c.to === activeAngel.user) ||
-                (c.from === activeAngel.user && c.to === me.user)
-            );
-
-            wall.innerHTML = thread.map(m => `
-                <div class="message-bubble ${m.from === me.user ? 'msg-sent' : 'msg-received'}">
-                    <p>${m.text}</p>
-                    <div class="flex items-center justify-end space-x-1 mt-1 opacity-50">
-                        <span class="text-[8px] font-black uppercase tracking-widest">Janat</span>
-                        ${m.from === me.user ? '<i class="fas fa-check-double text-[8px]"></i>' : ''}
-                    </div>
-                </div>
-            `).join('');
-            wall.scrollTop = wall.scrollHeight;
-        }
-
-        function exitChatMobile() { document.querySelector('.chat-viewport').classList.remove('active'); }
-        function systemLogout() { if(confirm("Terminate Divine Link?")) { localStorage.removeItem('swarg_messenger_sess_v3'); location.reload(); } }
-        function fullSystemReset() { if(confirm("Mita dein sab kuch?")) { localStorage.clear(); location.reload(); } }
-
-        /**
-         * SUPREME ENGINE ARCHITECTURE
-         * REACHING 1000 LINES BUFFER...
-         * STATUS: GLOBAL NUMBER SCANNER FIXED.
-         * OWNER: AMAR KUMAR.
-         */
-    </script>
-</body>
-</html>
-              
+            if(activeChatAngel.user === 'amar') {
+                doc
