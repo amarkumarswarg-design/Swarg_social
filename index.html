@@ -1142,4 +1142,425 @@
             localStorage.setItem('swarg_follows', JSON.stringify(follows));
         }
         
-        // ========== AUTHENTICA
+        // ========== AUTHENTICATION ==========
+        function checkAuth() {
+            const loggedInUser = localStorage.getItem('swarg_current_user');
+            if (loggedInUser) {
+                currentUser = JSON.parse(loggedInUser);
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+        
+        function showAuth() {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+        
+        function showApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            updateUserInfo();
+            loadFeed();
+            updateNotificationCounts();
+        }
+        
+        function switchAuth(type) {
+            if (type === 'register') {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            } else {
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('login-form').classList.remove('hidden');
+            }
+        }
+        
+        function checkUsername() {
+            const username = document.getElementById('reg-username').value.trim().toLowerCase();
+            const hint = document.getElementById('username-hint');
+            
+            if (username.length < 3) {
+                hint.textContent = 'Username must be at least 3 characters';
+                hint.className = 'text-xs text-red-400';
+                hint.classList.remove('hidden');
+                return false;
+            }
+            
+            const exists = users.some(u => u.username === username);
+            if (exists) {
+                hint.textContent = 'Username already taken';
+                hint.className = 'text-xs text-red-400';
+                hint.classList.remove('hidden');
+                return false;
+            }
+            
+            hint.textContent = 'Username available';
+            hint.className = 'text-xs text-green-400';
+            hint.classList.remove('hidden');
+            return true;
+        }
+        
+        function checkPasswordStrength() {
+            const password = document.getElementById('reg-password').value;
+            const strengthBar = document.getElementById('password-strength');
+            const hint = document.getElementById('password-hint');
+            
+            let strength = 0;
+            let hintText = '';
+            let width = '0%';
+            
+            if (password.length >= 8) strength++;
+            if (password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^A-Za-z0-9]/)) strength++;
+            
+            if (strength === 0) {
+                hintText = 'Very weak';
+                width = '25%';
+            } else if (strength === 1) {
+                hintText = 'Weak';
+                width = '25%';
+            } else if (strength === 2) {
+                hintText = 'Fair';
+                width = '50%';
+            } else if (strength === 3) {
+                hintText = 'Good';
+                width = '75%';
+            } else {
+                hintText = 'Strong';
+                width = '100%';
+            }
+            
+            strengthBar.style.width = width;
+            hint.textContent = hintText;
+        }
+        
+        function previewProfileImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('profile-preview');
+                const img = document.getElementById('profile-image');
+                
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                preview.querySelector('i').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function register() {
+            const fname = document.getElementById('reg-fname').value.trim();
+            const lname = document.getElementById('reg-lname').value.trim();
+            const username = document.getElementById('reg-username').value.trim().toLowerCase();
+            const email = document.getElementById('reg-email').value.trim();
+            const dob = document.getElementById('reg-dob').value;
+            const password = document.getElementById('reg-password').value;
+            const terms = document.getElementById('reg-terms').checked;
+            
+            // Validation
+            if (!fname || !lname || !username || !email || !dob || !password) {
+                showToast('Please fill all fields');
+                return;
+            }
+            
+            if (!terms) {
+                showToast('Please accept terms and conditions');
+                return;
+            }
+            
+            if (!checkUsername()) {
+                return;
+            }
+            
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters');
+                return;
+            }
+            
+            // Create user object
+            const newUser = {
+                id: Date.now().toString(),
+                username: username,
+                fname: fname,
+                lname: lname,
+                email: email,
+                password: password, // In production, hash this!
+                dob: dob,
+                avatar: document.getElementById('profile-image').src || `https://ui-avatars.com/api/?name=${encodeURIComponent(fname + ' ' + lname)}&background=0066ff&color=fff`,
+                bio: '',
+                location: '',
+                website: '',
+                joined: new Date().toISOString(),
+                verified: username === 'amar', // Only amar gets verified automatically
+                private: false,
+                followers: [],
+                following: [],
+                posts: []
+            };
+            
+            // Add to database
+            users.push(newUser);
+            saveDatabase();
+            
+            // Set as current user (without password)
+            const { password: _, ...userWithoutPass } = newUser;
+            currentUser = userWithoutPass;
+            localStorage.setItem('swarg_current_user', JSON.stringify(currentUser));
+            
+            // Show success
+            showToast('Account created successfully!');
+            showApp();
+        }
+        
+        function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            const user = users.find(u => 
+                (u.username === username || u.email === username) && 
+                u.password === password
+            );
+            
+            if (!user) {
+                showToast('Invalid username or password');
+                return;
+            }
+            
+            // Set as current user (without password)
+            const { password: _, ...userWithoutPass } = user;
+            currentUser = userWithoutPass;
+            localStorage.setItem('swarg_current_user', JSON.stringify(currentUser));
+            
+            showApp();
+        }
+        
+        function logout() {
+            localStorage.removeItem('swarg_current_user');
+            currentUser = null;
+            showAuth();
+        }
+        
+        // ========== USER PROFILE ==========
+        function updateUserInfo() {
+            if (!currentUser) return;
+            
+            // Update avatar everywhere
+            const avatars = ['user-avatar', 'sidebar-avatar', 'feed-user-avatar', 'profile-avatar'];
+            avatars.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.src = currentUser.avatar;
+            });
+            
+            // Update names
+            const fullName = `${currentUser.fname} ${currentUser.lname}`;
+            document.getElementById('sidebar-name').textContent = fullName;
+            document.getElementById('profile-name').textContent = fullName;
+            
+            // Update username
+            const usernameText = `@${currentUser.username}`;
+            document.getElementById('sidebar-username').textContent = usernameText;
+            document.getElementById('profile-username').textContent = usernameText;
+            
+            // Update stats
+            const userPosts = posts.filter(p => p.userId === currentUser.id);
+            const userFollowers = follows.filter(f => f.followingId === currentUser.id);
+            const userFollowing = follows.filter(f => f.followerId === currentUser.id);
+            
+            document.getElementById('sidebar-posts').textContent = userPosts.length;
+            document.getElementById('sidebar-followers').textContent = userFollowers.length;
+            document.getElementById('sidebar-following').textContent = userFollowing.length;
+            
+            document.getElementById('profile-posts-count').textContent = userPosts.length;
+            document.getElementById('profile-followers').textContent = userFollowers.length;
+            document.getElementById('profile-following').textContent = userFollowing.length;
+            
+            // Update verified badge
+            const verifiedBadges = ['sidebar-verified', 'profile-verified'];
+            verifiedBadges.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (currentUser.verified) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+            
+            // Update bio
+            document.getElementById('profile-bio').textContent = currentUser.bio || 'No bio yet';
+            
+            // Update settings
+            document.getElementById('settings-email').textContent = currentUser.email;
+            document.getElementById('edit-username').value = currentUser.username;
+            document.getElementById('private-account').checked = currentUser.private || false;
+        }
+        
+        function editProfile() {
+            document.getElementById('edit-fname').value = currentUser.fname;
+            document.getElementById('edit-lname').value = currentUser.lname;
+            document.getElementById('edit-bio').value = currentUser.bio || '';
+            document.getElementById('edit-location').value = currentUser.location || '';
+            document.getElementById('edit-website').value = currentUser.website || '';
+            document.getElementById('edit-profile-avatar').src = currentUser.avatar;
+            
+            showModal('edit-profile-modal');
+        }
+        
+        function saveProfile() {
+            currentUser.fname = document.getElementById('edit-fname').value.trim();
+            currentUser.lname = document.getElementById('edit-lname').value.trim();
+            currentUser.bio = document.getElementById('edit-bio').value.trim();
+            currentUser.location = document.getElementById('edit-location').value.trim();
+            currentUser.website = document.getElementById('edit-website').value.trim();
+            currentUser.private = document.getElementById('private-account').checked;
+            
+            // Update in users array
+            const index = users.findIndex(u => u.id === currentUser.id);
+            if (index !== -1) {
+                users[index] = { ...users[index], ...currentUser };
+                saveDatabase();
+                localStorage.setItem('swarg_current_user', JSON.stringify(currentUser));
+            }
+            
+            updateUserInfo();
+            closeEditProfileModal();
+            showToast('Profile updated');
+        }
+        
+        function changeProfilePicture() {
+            document.getElementById('edit-avatar-input').click();
+        }
+        
+        function updateProfilePicture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentUser.avatar = e.target.result;
+                document.getElementById('edit-profile-avatar').src = e.target.result;
+                
+                // Update in users array
+                const index = users.findIndex(u => u.id === currentUser.id);
+                if (index !== -1) {
+                    users[index].avatar = e.target.result;
+                    saveDatabase();
+                    localStorage.setItem('swarg_current_user', JSON.stringify(currentUser));
+                }
+                
+                updateUserInfo();
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // ========== POST SYSTEM ==========
+        function showCreatePost() {
+            showModal('create-post-modal');
+        }
+        
+        function addMediaToPost(type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = type === 'photo' ? 'image/*' : 'video/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const preview = document.getElementById('post-media-preview');
+                        const img = document.getElementById('media-preview');
+                        
+                        img.src = event.target.result;
+                        preview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+        
+        function addModalMedia(type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = type === 'photo' ? 'image/*' : 'video/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const preview = document.getElementById('modal-media-preview');
+                        const img = document.getElementById('modal-media');
+                        
+                        img.src = event.target.result;
+                        preview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+        
+        function removeMedia() {
+            document.getElementById('post-media-preview').classList.add('hidden');
+        }
+        
+        function removeModalMedia() {
+            document.getElementById('modal-media-preview').classList.add('hidden');
+        }
+        
+        function createPost() {
+            const content = document.getElementById('post-input').value.trim();
+            if (!content) {
+                showToast('Please write something');
+                return;
+            }
+            
+            const media = document.getElementById('post-media-preview').classList.contains('hidden') ? 
+                null : document.getElementById('media-preview').src;
+            
+            createNewPost(content, media);
+            document.getElementById('post-input').value = '';
+            removeMedia();
+        }
+        
+        function createPostFromModal() {
+            const content = document.getElementById('modal-post-input').value.trim();
+            if (!content) {
+                showToast('Please write something');
+                return;
+            }
+            
+            const media = document.getElementById('modal-media-preview').classList.contains('hidden') ? 
+                null : document.getElementById('modal-media').src;
+            
+            createNewPost(content, media);
+            document.getElementById('modal-post-input').value = '';
+            removeModalMedia();
+            closeCreatePostModal();
+        }
+        
+        function createNewPost(content, media) {
+            const newPost = {
+                id: Date.now().toString(),
+                userId: currentUser.id,
+                username: currentUser.username,
+                userAvatar: currentUser.avatar,
+                userName: `${currentUser.fname} ${currentUser.lname}`,
+                content: content,
+                media: media,
+                likes: [],
+                comments: [],
+                shares: 0,
+                timestamp: new Date().toISOString(),
+                privacy: 'public'
+            };
+            
+            posts.unshift(newPost);
+            saveDatabase();
+            
+            // Update user
