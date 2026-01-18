@@ -2140,4 +2140,295 @@
                 if (username.length < 3) {
                     hint.textContent = 'Username must be at least 3 characters';
                     hint.style.color = '#ff003c';
-                } else if (allUsers.some(u => u.username === use
+                } else if (allUsers.some(u => u.username === username)) {
+                    hint.textContent = 'Username already taken';
+                    hint.style.color = '#ff003c';
+                } else {
+                    hint.textContent = 'Username available';
+                    hint.style.color = '#00ff95';
+                }
+            });
+            
+            // Register form password strength
+            document.getElementById('reg-password').addEventListener('input', function() {
+                const password = this.value;
+                const hint = document.getElementById('pw-hint');
+                const bars = [1, 2, 3, 4].map(i => document.getElementById(`pw-strength-${i}`));
+                
+                let strength = 0;
+                let color = '#ff003c';
+                let text = 'Very weak';
+                
+                if (password.length >= 8) strength = 1;
+                if (password.length >= 12) strength = 2;
+                if (password.match(/[A-Z]/) && password.match(/[0-9]/)) strength = 3;
+                if (password.match(/[^A-Za-z0-9]/)) strength = 4;
+                
+                // Update bars
+                bars.forEach((bar, index) => {
+                    if (index < strength) {
+                        if (strength === 1) {
+                            bar.style.background = '#ff003c';
+                        } else if (strength === 2) {
+                            bar.style.background = '#ffcc00';
+                        } else if (strength === 3) {
+                            bar.style.background = '#00ff95';
+                        } else if (strength === 4) {
+                            bar.style.background = '#00f3ff';
+                        }
+                    } else {
+                        bar.style.background = '#666';
+                    }
+                });
+                
+                // Update text
+                if (strength === 1) {
+                    text = 'Weak';
+                    color = '#ff003c';
+                } else if (strength === 2) {
+                    text = 'Fair';
+                    color = '#ffcc00';
+                } else if (strength === 3) {
+                    text = 'Good';
+                    color = '#00ff95';
+                } else if (strength === 4) {
+                    text = 'Strong';
+                    color = '#00f3ff';
+                }
+                
+                hint.textContent = text;
+                hint.style.color = color;
+            });
+        }
+        
+        function loadSampleData() {
+            // Add some sample posts if empty
+            if (allPosts.length === 0) {
+                const samplePosts = [
+                    {
+                        id: 1,
+                        userId: 1,
+                        username: 'amar',
+                        userAvatar: 'https://ui-avatars.com/api/?name=Amar+Kumar&background=0066ff&color=fff&size=256',
+                        userName: 'Amar Kumar',
+                        content: 'Welcome to SWARG Social! The next-generation social platform is here. 🚀',
+                        media: null,
+                        likes: 245,
+                        comments: 36,
+                        shares: 12,
+                        liked: false,
+                        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                        privacy: 'public'
+                    },
+                    {
+                        id: 2,
+                        userId: 2,
+                        username: 'tech_guru',
+                        userAvatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=9d00ff&color=fff&size=256',
+                        userName: 'Sarah Johnson',
+                        content: 'Just finished building an amazing new AI model. The future is here! #AI #Tech',
+                        media: null,
+                        likes: 189,
+                        comments: 24,
+                        shares: 8,
+                        liked: true,
+                        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                        privacy: 'public'
+                    },
+                    {
+                        id: 3,
+                        userId: 3,
+                        username: 'design_master',
+                        userAvatar: 'https://ui-avatars.com/api/?name=Alex+Chen&background=00ff95&color=000&size=256',
+                        userName: 'Alex Chen',
+                        content: 'Check out my latest UI/UX design for a fintech app. Minimal and functional!',
+                        media: null,
+                        likes: 312,
+                        comments: 42,
+                        shares: 15,
+                        liked: false,
+                        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+                        privacy: 'public'
+                    },
+                    {
+                        id: 4,
+                        userId: 4,
+                        username: 'crypto_king',
+                        userAvatar: 'https://ui-avatars.com/api/?name=Mike+Rodriguez&background=ff003c&color=fff&size=256',
+                        userName: 'Mike Rodriguez',
+                        content: 'Bitcoin hitting new highs! 🚀 Who else is excited about the crypto revolution?',
+                        media: null,
+                        likes: 156,
+                        comments: 89,
+                        shares: 23,
+                        liked: false,
+                        timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+                        privacy: 'public'
+                    },
+                    {
+                        id: 5,
+                        userId: 5,
+                        username: 'travel_buddy',
+                        userAvatar: 'https://ui-avatars.com/api/?name=Lisa+Wang&background=00f3ff&color=000&size=256',
+                        userName: 'Lisa Wang',
+                        content: 'Beautiful sunset in Bali today. Nature always finds a way to amaze me. 🌅',
+                        media: null,
+                        likes: 278,
+                        comments: 31,
+                        shares: 9,
+                        liked: true,
+                        timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+                        privacy: 'public'
+                    }
+                ];
+                
+                allPosts = samplePosts;
+                localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+            }
+            
+            // Add sample notifications
+            if (notifications.length === 0) {
+                notifications = [
+                    {
+                        id: 1,
+                        userId: 1,
+                        type: 'welcome',
+                        message: 'Welcome to SWARG Social! Start connecting with people.',
+                        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+                        read: true
+                    },
+                    {
+                        id: 2,
+                        userId: 1,
+                        type: 'like',
+                        message: 'Sarah Johnson liked your post',
+                        postId: 1,
+                        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                        read: true
+                    },
+                    {
+                        id: 3,
+                        userId: 1,
+                        type: 'follow',
+                        message: 'Mike Rodriguez started following you',
+                        timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+                        read: false
+                    }
+                ];
+                localStorage.setItem('swarg_social_notifications', JSON.stringify(notifications));
+            }
+            
+            // Add sample messages
+            if (messages.length === 0) {
+                messages = [
+                    {
+                        id: 1,
+                        senderId: 2,
+                        receiverId: 1,
+                        content: 'Hey Amar, love the new platform!',
+                        timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+                        read: true
+                    },
+                    {
+                        id: 2,
+                        senderId: 1,
+                        receiverId: 2,
+                        content: 'Thanks Sarah! Glad you like it.',
+                        timestamp: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+                        read: true
+                    },
+                    {
+                        id: 3,
+                        senderId: 3,
+                        receiverId: 1,
+                        content: 'We should collaborate on a design project!',
+                        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                        read: false
+                    }
+                ];
+                localStorage.setItem('swarg_social_messages', JSON.stringify(messages));
+            }
+        }
+        
+        // ========== UI HELPER FUNCTIONS ==========
+        function showMenu() {
+            // Mobile menu toggle
+            const sidebar = document.querySelector('aside');
+            sidebar.classList.toggle('hidden');
+        }
+        
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        function showNotifications() {
+            switchTab('notifications');
+        }
+        
+        function showMessages() {
+            switchTab('messages');
+        }
+        
+        function editProfilePicture() {
+            document.getElementById('avatar-upload').click();
+        }
+        
+        function shareProfile() {
+            const profileUrl = `https://swarg.social/@${currentUser.username}`;
+            navigator.clipboard.writeText(profileUrl).then(() => {
+                showToast('Profile link copied to clipboard!');
+            });
+        }
+        
+        function changeEmail() {
+            const newEmail = prompt('Enter new email address:');
+            if (newEmail && newEmail.includes('@')) {
+                currentUser.email = newEmail;
+                updateUserInDatabase();
+                updateUserInfo();
+                showToast('Email updated successfully!');
+            }
+        }
+        
+        function changePassword() {
+            const newPassword = prompt('Enter new password:');
+            if (newPassword && newPassword.length >= 8) {
+                // In a real app, you would hash the password
+                const userIndex = allUsers.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    allUsers[userIndex].password = newPassword;
+                    localStorage.setItem('swarg_social_users', JSON.stringify(allUsers));
+                    showToast('Password updated successfully!');
+                }
+            } else {
+                alert('Password must be at least 8 characters long');
+            }
+        }
+        
+        function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                // Remove user from database
+                allUsers = allUsers.filter(u => u.id !== currentUser.id);
+                localStorage.setItem('swarg_social_users', JSON.stringify(allUsers));
+                
+                // Remove user's posts
+                allPosts = allPosts.filter(p => p.userId !== currentUser.id);
+                localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+                
+                // Logout
+                logout();
+                showToast('Account deleted successfully');
+            }
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileMenu = document.getElementById('profile-menu');
+            if (profileMenu && !event.target.closest('#profile-menu') && !event.target.closest('.relative button')) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
