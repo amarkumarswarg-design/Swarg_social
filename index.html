@@ -1920,4 +1920,399 @@
             return element;
         }
         
-        // ========== SEARC
+        // ========== SEARCH SYSTEM ==========
+        function showSearchModal() {
+            showModal('search-modal');
+            searchUsersModal();
+        }
+        
+        function searchUsers() {
+            const query = document.getElementById('global-search').value.toLowerCase().trim();
+            if (!query) return;
+            
+            const results = users.filter(user => 
+                user.username.toLowerCase().includes(query) ||
+                user.fname.toLowerCase().includes(query) ||
+                user.lname.toLowerCase().includes(query)
+            );
+            
+            // In desktop, show results differently
+            // For now, just log
+            console.log('Search results:', results);
+        }
+        
+        function searchUsersModal() {
+            const query = document.getElementById('modal-search').value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '<p class="text-gray-400 text-center py-8">Type to search users</p>';
+                return;
+            }
+            
+            const results = users.filter(user => 
+                user.username.toLowerCase().includes(query) ||
+                user.fname.toLowerCase().includes(query) ||
+                user.lname.toLowerCase().includes(query)
+            );
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-gray-400 text-center py-8">No users found</p>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '';
+            results.forEach(user => {
+                const element = createUserListItem(user);
+                resultsDiv.appendChild(element);
+            });
+        }
+        
+        function viewUserProfile(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            // Store user to view
+            sessionStorage.setItem('viewing_user', JSON.stringify(user));
+            
+            // Switch to profile tab and show user profile
+            // This would need a separate view-user-profile component
+            // For now, just alert
+            alert(`Viewing profile of ${user.fname} ${user.lname}`);
+        }
+        
+        // ========== MESSAGING SYSTEM ==========
+        function showMessages() {
+            switchTab('messages');
+            loadConversations();
+        }
+        
+        function loadConversations() {
+            const conversationsDiv = document.getElementById('conversations-list');
+            const currentUserId = currentUser.id;
+            
+            // Get unique users you've messaged or who messaged you
+            const conversationUsers = new Map();
+            
+            messages.forEach(msg => {
+                if (msg.senderId === currentUserId || msg.receiverId === currentUserId) {
+                    const otherUserId = msg.senderId === currentUserId ? msg.receiverId : msg.senderId;
+                    if (!conversationUsers.has(otherUserId)) {
+                        const user = users.find(u => u.id === otherUserId);
+                        if (user) {
+                            conversationUsers.set(otherUserId, {
+                                user: user,
+                                lastMessage: msg.content,
+                                timestamp: msg.timestamp,
+                                unread: msg.receiverId === currentUserId && !msg.read
+                            });
+                        }
+                    }
+                }
+            });
+            
+            conversationsDiv.innerHTML = '';
+            
+            if (conversationUsers.size === 0) {
+                conversationsDiv.innerHTML = '<p class="text-gray-400 text-center py-8">No messages yet</p>';
+                return;
+            }
+            
+            Array.from(conversationUsers.values()).forEach(conv => {
+                const element = document.createElement('div');
+                element.className = 'flex items-center gap-3 p-4 hover:bg-white/5 rounded-xl cursor-pointer';
+                element.innerHTML = `
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-full overflow-hidden">
+                            <img src="${conv.user.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        ${getOnlineStatus(conv.user.id) ? '<div class="status-online absolute bottom-0 right-0"></div>' : ''}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <h4 class="font-bold">${conv.user.fname} ${conv.user.lname}</h4>
+                            ${conv.user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+                        </div>
+                        <p class="text-gray-400 text-sm truncate">${conv.lastMessage}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-500 text-xs">${getTimeAgo(conv.timestamp)}</p>
+                        ${conv.unread ? '<div class="w-2 h-2 bg-primary-cyan rounded-full mt-1 ml-auto"></div>' : ''}
+                    </div>
+                `;
+                
+                element.addEventListener('click', function() {
+                    startChat(conv.user);
+                });
+                
+                conversationsDiv.appendChild(element);
+            });
+        }
+        
+        function startChat(user) {
+            selectedChat = user;
+            
+            // Update chat header
+            const header = document.getElementById('chat-header');
+            header.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full overflow-hidden">
+                            <img src="${user.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        ${getOnlineStatus(user.id) ? '<div class="status-online absolute bottom-0 right-0"></div>' : ''}
+                    </div>
+                    <div>
+                        <div class="flex items-center">
+                            <h3 class="font-bold">${user.fname} ${user.lname}</h3>
+                            ${user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+                        </div>
+                        <p class="text-gray-400 text-sm">@${user.username}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Load messages
+            loadChatMessages(user.id);
+        }
+        
+        function loadChatMessages(userId) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const currentUserId = currentUser.id;
+            
+            const chatMessages = messages.filter(msg => 
+                (msg.senderId === currentUserId && msg.receiverId === userId) ||
+                (msg.senderId === userId && msg.receiverId === currentUserId)
+            ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            messagesDiv.innerHTML = '';
+            
+            chatMessages.forEach(msg => {
+                const isSent = msg.senderId === currentUserId;
+                const element = document.createElement('div');
+                element.className = isSent ? 'flex justify-end' : 'flex justify-start';
+                element.innerHTML = `
+                    <div class="${isSent ? 'chat-bubble-sent' : 'chat-bubble-received'}">
+                        <p>${escapeHtml(msg.content)}</p>
+                        <p class="text-xs opacity-70 mt-1 text-right">${formatTime(msg.timestamp)}</p>
+                    </div>
+                `;
+                messagesDiv.appendChild(element);
+            });
+            
+            // Mark messages as read
+            messages.forEach(msg => {
+                if (msg.receiverId === currentUserId && msg.senderId === userId && !msg.read) {
+                    msg.read = true;
+                }
+            });
+            saveDatabase();
+            updateNotificationCounts();
+            
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function sendMessage() {
+            if (!selectedChat) {
+                showToast('Select a conversation first');
+                return;
+            }
+            
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            
+            if (!content) return;
+            
+            const newMessage = {
+                id: Date.now().toString(),
+                senderId: currentUser.id,
+                receiverId: selectedChat.id,
+                content: content,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            messages.push(newMessage);
+            saveDatabase();
+            
+            // Add notification
+            addNotification({
+                id: Date.now().toString(),
+                userId: selectedChat.id,
+                type: 'message',
+                fromUserId: currentUser.id,
+                fromUsername: currentUser.username,
+                message: `${currentUser.fname} sent you a message`,
+                timestamp: new Date().toISOString(),
+                read: false
+            });
+            
+            // Clear input and reload chat
+            input.value = '';
+            loadChatMessages(selectedChat.id);
+            loadConversations();
+            updateNotificationCounts();
+        }
+        
+        // ========== NOTIFICATION SYSTEM ==========
+        function addNotification(notification) {
+            notifications.unshift(notification);
+            saveDatabase();
+            updateNotificationCounts();
+            
+            // If on notifications tab, reload
+            if (currentTab === 'notifications') {
+                loadNotifications();
+            }
+        }
+        
+        function loadNotifications() {
+            const list = document.getElementById('notifications-list');
+            const userNotifications = notifications
+                .filter(n => n.userId === currentUser.id)
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            list.innerHTML = '';
+            
+            if (userNotifications.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-center py-8">No notifications</p>';
+                return;
+            }
+            
+            userNotifications.forEach(notif => {
+                const element = document.createElement('div');
+                element.className = `flex items-start gap-3 p-4 hover:bg-white/5 rounded-xl ${notif.read ? '' : 'border-l-4 border-primary-cyan'}`;
+                
+                let icon = 'bell';
+                let color = 'primary-blue';
+                
+                switch(notif.type) {
+                    case 'like':
+                        icon = 'heart';
+                        color = 'red-400';
+                        break;
+                    case 'comment':
+                        icon = 'comment';
+                        color = 'primary-cyan';
+                        break;
+                    case 'follow':
+                        icon = 'user-plus';
+                        color = 'green-400';
+                        break;
+                    case 'message':
+                        icon = 'envelope';
+                        color = 'primary-purple';
+                        break;
+                }
+                
+                element.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-${color} bg-opacity-20 flex items-center justify-center">
+                        <i class="fas fa-${icon} text-${color}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p>${notif.message}</p>
+                        <p class="text-gray-400 text-sm mt-1">${getTimeAgo(notif.timestamp)}</p>
+                    </div>
+                    ${!notif.read ? '<div class="w-2 h-2 bg-primary-cyan rounded-full mt-2"></div>' : ''}
+                `;
+                
+                // Mark as read on click
+                element.addEventListener('click', function() {
+                    notif.read = true;
+                    saveDatabase();
+                    updateNotificationCounts();
+                    loadNotifications();
+                });
+                
+                list.appendChild(element);
+            });
+        }
+        
+        function updateNotificationCounts() {
+            const unreadNotifications = notifications.filter(n => 
+                n.userId === currentUser.id && !n.read
+            ).length;
+            
+            const unreadMessages = messages.filter(m => 
+                m.receiverId === currentUser.id && !m.read
+            ).length;
+            
+            // Update all notification badges
+            const notificationBadges = ['notification-count', 'nav-notification-count', 'mobile-notification-count'];
+            notificationBadges.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (unreadNotifications > 0) {
+                        el.textContent = unreadNotifications;
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+            
+            // Update message badges
+            const messageBadges = ['message-count', 'nav-message-count'];
+            messageBadges.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (unreadMessages > 0) {
+                        el.textContent = unreadMessages;
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // ========== TAB SYSTEM ==========
+        function switchTab(tab) {
+            // Update active tab button
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'text-primary-cyan');
+                btn.classList.add('text-gray-400');
+            });
+            
+            const activeBtn = document.querySelector(`.tab-button[onclick*="${tab}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'text-primary-cyan');
+                activeBtn.classList.remove('text-gray-400');
+            }
+            
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+                pane.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const tabPane = document.getElementById(`${tab}-tab`);
+            if (tabPane) {
+                tabPane.classList.remove('hidden');
+                tabPane.classList.add('active');
+            }
+            
+            currentTab = tab;
+            
+            // Load tab content
+            switch(tab) {
+                case 'feed':
+                    loadFeed();
+                    break;
+                case 'notifications':
+                    loadNotifications();
+                    break;
+                case 'messages':
+                    loadConversations();
+                    break;
+                case 'profile':
+                    loadUserPosts();
+                    break;
+                case 'explore':
+                    loadExplore();
+                    break;
+            }
+            
+            // Close sid
