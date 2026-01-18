@@ -1297,4 +1297,396 @@
             showAuth();
         }
         
-        // ========== USER PRO
+        // ========== USER PROFILE FUNCTIONS ==========
+        function updateUserInfo() {
+            if (!currentUser) return;
+            
+            // Update avatar everywhere
+            document.querySelectorAll('#user-avatar, #sidebar-avatar, #feed-avatar, #profile-avatar').forEach(el => {
+                el.src = currentUser.avatar;
+            });
+            
+            // Update name
+            document.getElementById('sidebar-name').textContent = currentUser.fname + ' ' + currentUser.lname;
+            document.getElementById('profile-name').textContent = currentUser.fname + ' ' + currentUser.lname;
+            
+            // Update username
+            document.getElementById('sidebar-username').textContent = '@' + currentUser.username;
+            document.getElementById('profile-username').textContent = '@' + currentUser.username;
+            
+            // Update stats
+            document.getElementById('sidebar-followers').textContent = currentUser.followers;
+            document.getElementById('sidebar-following').textContent = currentUser.following;
+            document.getElementById('sidebar-posts').textContent = currentUser.posts;
+            
+            document.getElementById('profile-followers').textContent = currentUser.followers;
+            document.getElementById('profile-following').textContent = currentUser.following;
+            document.getElementById('profile-posts-count').textContent = currentUser.posts;
+            
+            // Update bio
+            document.getElementById('profile-bio').textContent = currentUser.bio || 'No bio yet.';
+            
+            // Update location
+            document.getElementById('profile-location').textContent = currentUser.location || 'Not specified';
+            
+            // Update website
+            const websiteEl = document.getElementById('profile-website');
+            websiteEl.textContent = currentUser.website || 'No website';
+            websiteEl.href = currentUser.website || '#';
+            
+            // Update joined date
+            const joinedDate = new Date(currentUser.joined);
+            document.getElementById('profile-joined').textContent = joinedDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long' 
+            });
+            
+            // Update verified badge
+            const verifiedBadge = document.getElementById('profile-verified');
+            if (currentUser.verified) {
+                verifiedBadge.classList.remove('hidden');
+            } else {
+                verifiedBadge.classList.add('hidden');
+            }
+            
+            // Update settings email
+            document.getElementById('settings-email').textContent = currentUser.email;
+        }
+        
+        function editProfile() {
+            document.getElementById('edit-fname').value = currentUser.fname;
+            document.getElementById('edit-lname').value = currentUser.lname;
+            document.getElementById('edit-username').value = currentUser.username;
+            document.getElementById('edit-bio').value = currentUser.bio;
+            document.getElementById('edit-location').value = currentUser.location;
+            document.getElementById('edit-website').value = currentUser.website;
+            document.getElementById('edit-dob').value = currentUser.dob;
+            document.getElementById('edit-avatar').src = currentUser.avatar;
+            
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+        
+        function closeEditProfile() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+        }
+        
+        function changeProfilePicture() {
+            document.getElementById('avatar-upload').click();
+        }
+        
+        function saveProfile() {
+            const fname = document.getElementById('edit-fname').value;
+            const lname = document.getElementById('edit-lname').value;
+            const username = document.getElementById('edit-username').value;
+            const bio = document.getElementById('edit-bio').value;
+            const location = document.getElementById('edit-location').value;
+            const website = document.getElementById('edit-website').value;
+            const dob = document.getElementById('edit-dob').value;
+            
+            // Update current user
+            currentUser.fname = fname;
+            currentUser.lname = lname;
+            currentUser.username = username;
+            currentUser.bio = bio;
+            currentUser.location = location;
+            currentUser.website = website;
+            currentUser.dob = dob;
+            currentUser.verified = username === 'amar'; // Only amar stays verified
+            
+            // Update in database
+            const userIndex = allUsers.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                allUsers[userIndex] = { ...allUsers[userIndex], ...currentUser };
+                localStorage.setItem('swarg_social_users', JSON.stringify(allUsers));
+                localStorage.setItem('swarg_social_logged_in', JSON.stringify(currentUser));
+            }
+            
+            updateUserInfo();
+            closeEditProfile();
+        }
+        
+        // ========== POST FUNCTIONS ==========
+        function showCreatePost() {
+            document.getElementById('create-post-modal').classList.remove('hidden');
+        }
+        
+        function closeCreatePost() {
+            document.getElementById('create-post-modal').classList.add('hidden');
+            document.getElementById('modal-post-input').value = '';
+            document.getElementById('post-media-preview').classList.add('hidden');
+        }
+        
+        function openMediaUpload(type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = type === 'photo' ? 'image/*' : 'video/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('media-preview-img').src = event.target.result;
+                        document.getElementById('post-media-preview').classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+        
+        function removeMedia() {
+            document.getElementById('post-media-preview').classList.add('hidden');
+        }
+        
+        function submitPost() {
+            const content = document.getElementById('modal-post-input').value;
+            
+            if (!content.trim()) {
+                alert('Please write something');
+                return;
+            }
+            
+            const newPost = {
+                id: Date.now(),
+                userId: currentUser.id,
+                username: currentUser.username,
+                userAvatar: currentUser.avatar,
+                userName: currentUser.fname + ' ' + currentUser.lname,
+                content: content,
+                media: document.getElementById('post-media-preview').classList.contains('hidden') ? null : document.getElementById('media-preview-img').src,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                liked: false,
+                timestamp: new Date().toISOString(),
+                privacy: 'public'
+            };
+            
+            // Add to database
+            allPosts.unshift(newPost);
+            localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+            
+            // Update user post count
+            currentUser.posts++;
+            updateUserInDatabase();
+            
+            // Close modal and reload feed
+            closeCreatePost();
+            loadFeed();
+            
+            // Show success message
+            showToast('Post published successfully!');
+        }
+        
+        function createPost() {
+            const content = document.getElementById('post-input').value;
+            
+            if (!content.trim()) {
+                alert('Please write something');
+                return;
+            }
+            
+            const newPost = {
+                id: Date.now(),
+                userId: currentUser.id,
+                username: currentUser.username,
+                userAvatar: currentUser.avatar,
+                userName: currentUser.fname + ' ' + currentUser.lname,
+                content: content,
+                media: null,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                liked: false,
+                timestamp: new Date().toISOString(),
+                privacy: 'public'
+            };
+            
+            // Add to database
+            allPosts.unshift(newPost);
+            localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+            
+            // Update user post count
+            currentUser.posts++;
+            updateUserInDatabase();
+            
+            // Clear input and reload feed
+            document.getElementById('post-input').value = '';
+            loadFeed();
+            
+            // Show success message
+            showToast('Post published successfully!');
+        }
+        
+        function likePost(postId) {
+            const postIndex = allPosts.findIndex(p => p.id === postId);
+            if (postIndex === -1) return;
+            
+            const post = allPosts[postIndex];
+            if (post.liked) {
+                post.likes--;
+                post.liked = false;
+            } else {
+                post.likes++;
+                post.liked = true;
+                
+                // Add notification if not own post
+                if (post.userId !== currentUser.id) {
+                    addNotification({
+                        id: Date.now(),
+                        userId: post.userId,
+                        type: 'like',
+                        message: `${currentUser.fname} liked your post`,
+                        postId: postId,
+                        timestamp: new Date().toISOString(),
+                        read: false
+                    });
+                }
+            }
+            
+            // Update database
+            localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+            
+            // Update UI
+            if (currentTab === 'feed') {
+                loadFeed();
+            } else if (currentTab === 'profile') {
+                loadUserPosts();
+            }
+        }
+        
+        function addComment(postId) {
+            const commentInput = document.getElementById(`comment-input-${postId}`);
+            const comment = commentInput.value.trim();
+            
+            if (!comment) return;
+            
+            const postIndex = allPosts.findIndex(p => p.id === postId);
+            if (postIndex === -1) return;
+            
+            allPosts[postIndex].comments++;
+            
+            // Add notification if not own post
+            if (allPosts[postIndex].userId !== currentUser.id) {
+                addNotification({
+                    id: Date.now(),
+                    userId: allPosts[postIndex].userId,
+                    type: 'comment',
+                    message: `${currentUser.fname} commented on your post`,
+                    postId: postId,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                });
+            }
+            
+            // Update database
+            localStorage.setItem('swarg_social_posts', JSON.stringify(allPosts));
+            
+            // Clear input and update UI
+            commentInput.value = '';
+            if (currentTab === 'feed') {
+                loadFeed();
+            } else if (currentTab === 'profile') {
+                loadUserPosts();
+            }
+            
+            showToast('Comment added!');
+        }
+        
+        // ========== FEED FUNCTIONS ==========
+        function loadFeed() {
+            const feedPosts = document.getElementById('feed-posts');
+            const loading = document.getElementById('feed-loading');
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            feedPosts.innerHTML = '';
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                // Sort posts by timestamp (newest first)
+                const sortedPosts = [...allPosts].sort((a, b) => 
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                );
+                
+                // Display posts
+                sortedPosts.forEach(post => {
+                    const postElement = createPostElement(post);
+                    feedPosts.appendChild(postElement);
+                });
+                
+                loading.classList.add('hidden');
+            }, 500);
+        }
+        
+        function createPostElement(post) {
+            const user = allUsers.find(u => u.id === post.userId) || post;
+            const timeAgo = getTimeAgo(post.timestamp);
+            
+            const postEl = document.createElement('div');
+            postEl.className = 'post-card p-6';
+            postEl.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary-cyan to-primary-blue overflow-hidden">
+                            <img src="${user.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="flex items-center">
+                                <h4 class="font-bold">${user.userName || user.fname + ' ' + user.lname}</h4>
+                                ${user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+                            </div>
+                            <p class="text-gray-400 text-sm">@${user.username} • ${timeAgo}</p>
+                        </div>
+                    </div>
+                    <button class="text-gray-400 hover:text-white">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-gray-300">${post.content}</p>
+                    ${post.media ? `
+                        <div class="mt-4 rounded-xl overflow-hidden">
+                            <img src="${post.media}" class="w-full max-h-96 object-cover">
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="flex items-center justify-between text-gray-400">
+                    <div class="flex items-center space-x-6">
+                        <button onclick="likePost(${post.id})" class="flex items-center space-x-2 ${post.liked ? 'text-red-400' : 'hover:text-red-400'}">
+                            <i class="fas fa-heart ${post.liked ? 'fas' : 'far'}"></i>
+                            <span>${post.likes}</span>
+                        </button>
+                        <button class="flex items-center space-x-2 hover:text-primary-cyan">
+                            <i class="far fa-comment"></i>
+                            <span>${post.comments}</span>
+                        </button>
+                        <button class="flex items-center space-x-2 hover:text-green-400">
+                            <i class="far fa-share-square"></i>
+                            <span>${post.shares}</span>
+                        </button>
+                    </div>
+                    <button class="hover:text-yellow-400">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-800">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full overflow-hidden">
+                            <img src="${currentUser.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        <input type="text" id="comment-input-${post.id}" class="flex-1 px-4 py-2 bg-black/30 border border-gray-700 rounded-full text-white focus:outline-none focus:border-primary-blue transition" placeholder="Write a comment...">
+                        <button onclick="addComment(${post.id})" class="px-4 py-2 bg-primary-blue rounded-full hover:bg-blue-600 transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return postEl;
+        }
+        
+        // ========== SEARCH FUNCT
