@@ -536,4 +536,345 @@
                         <div class="text-center">
                             <p class="text-gray-400 text-sm">
                                 Already have an account? 
-                                <button onclick="switchAuth('login')" class="text-primary-cyan font-medi
+                                <button onclick="switchAuth('login')" class="text-primary-cyan font-medium">Sign In</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main App -->
+        <div id="main-app" class="hidden">
+            <!-- Top Navigation -->
+            <header class="glass-effect sticky top-0 z-50">
+                <div class="flex items-center justify-between p-4">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleSidebar()" class="lg:hidden">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h1 class="text-xl font-black gradient-text">SWARG</h1>
+                    </div>
+                    
+                    <!-- Search Button -->
+                    <button onclick="showSearchModal()" class="lg:hidden">
+                        <i class="fas fa-search text-xl"></i>
+                    </button>
+                    
+                    <!-- Desktop Search -->
+                    <div class="hidden lg:block flex-1 max-w-xl mx-8">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="global-search" class="input-field pl-12" placeholder="Search users..." oninput="searchUsers()">
+                        </div>
+                    </div>
+                    
+                    <!-- Right Actions -->
+                    <div class="flex items-center gap-4">
+                        <button onclick="showCreatePost()" class="hidden md:inline-flex items-center gap-2 btn-primary px-4 py-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Post</span>
+                        </button>
+                        
+                        <button onclick="showNotifications()" class="relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notification-count" class="notification-badge hidden">0</span>
+                        </button>
+                        
+                        <button onclick="showMessages()" class="relative">
+                            <i class="fas fa-envelope text-xl"></i>
+                            <span id="message-count" class="notification-badge hidden">0</span>
+                        </button>
+                        
+                        <!-- Profile Menu -->
+                        <div class="relative">
+                            <button onclick="toggleProfileMenu()" id="user-avatar-btn">
+                                <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                                    <img id="user-avatar" class="w-full h-full object-cover">
+                                </div>
+                            </button>
+                            
+                            <!-- Profile Dropdown -->
+                            <div id="profile-menu" class="hidden absolute right-0 top-full mt-2 w-48 glass-effect p-2 rounded-xl">
+                                <a href="#" onclick="switchTab('profile')" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                    <span>Profile</span>
+                                </a>
+                                <a href="#" onclick="switchTab('settings')" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg">
+                                    <i class="fas fa-cog text-gray-400"></i>
+                                    <span>Settings</span>
+                                </a>
+                                <hr class="my-2 border-gray-700">
+                                <a href="#" onclick="logout()" class="flex items-center gap-3 p-3 hover:bg-red-500/10 text-red-400 rounded-lg">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Sidebar (Desktop) -->
+            <aside id="sidebar" class="hidden lg:block fixed left-0 top-16 bottom-0 w-64 p-6 glass-effect">
+                <!-- User Profile -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 rounded-full overflow-hidden">
+                            <img id="sidebar-avatar" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="flex items-center">
+                                <h3 id="sidebar-name" class="font-bold"></h3>
+                                <span id="sidebar-verified" class="verified-badge hidden">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                            </div>
+                            <p id="sidebar-username" class="text-gray-400 text-sm"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="text-center">
+                            <div id="sidebar-posts" class="font-bold">0</div>
+                            <div class="text-xs text-gray-400">Posts</div>
+                        </div>
+                        <button onclick="showFollowers()" class="text-center cursor-pointer">
+                            <div id="sidebar-followers" class="font-bold">0</div>
+                            <div class="text-xs text-gray-400">Followers</div>
+                        </button>
+                        <button onclick="showFollowing()" class="text-center cursor-pointer">
+                            <div id="sidebar-following" class="font-bold">0</div>
+                            <div class="text-xs text-gray-400">Following</div>
+                        </button>
+                    </div>
+                    
+                    <button onclick="switchTab('profile')" class="w-full py-2 bg-gray-800 rounded-xl hover:bg-gray-700 transition">
+                        View Profile
+                    </button>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="space-y-2">
+                    <a href="#" onclick="switchTab('feed')" class="tab-button active flex items-center gap-3">
+                        <i class="fas fa-home"></i>
+                        <span>Feed</span>
+                    </a>
+                    <a href="#" onclick="switchTab('explore')" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-compass"></i>
+                        <span>Explore</span>
+                    </a>
+                    <a href="#" onclick="showSearchModal()" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </a>
+                    <a href="#" onclick="switchTab('notifications')" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        <span id="nav-notification-count" class="notification-badge hidden">0</span>
+                    </a>
+                    <a href="#" onclick="switchTab('messages')" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messages</span>
+                        <span id="nav-message-count" class="notification-badge hidden">0</span>
+                    </a>
+                    <a href="#" onclick="switchTab('profile')" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="switchTab('settings')" class="tab-button flex items-center gap-3">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+                
+                <!-- Create Post Button -->
+                <button onclick="showCreatePost()" class="w-full mt-8 py-3 btn-primary">
+                    <i class="fas fa-plus mr-2"></i> Create Post
+                </button>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="lg:ml-64 pt-4">
+                <!-- Tab Content -->
+                <div id="tab-content">
+                    <!-- Feed Tab -->
+                    <div id="feed-tab" class="tab-pane active max-w-2xl mx-auto px-4">
+                        <!-- Create Post Card -->
+                        <div class="glass-effect p-6 mb-6">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden">
+                                    <img id="feed-user-avatar" class="w-full h-full object-cover">
+                                </div>
+                                <input type="text" id="post-input" class="input-field flex-1" placeholder="What's on your mind?">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex gap-4">
+                                    <button onclick="addMediaToPost('photo')" class="flex items-center gap-2 text-gray-400 hover:text-primary-cyan">
+                                        <i class="fas fa-image"></i>
+                                        <span>Photo</span>
+                                    </button>
+                                    <button onclick="addMediaToPost('video')" class="flex items-center gap-2 text-gray-400 hover:text-primary-cyan">
+                                        <i class="fas fa-video"></i>
+                                        <span>Video</span>
+                                    </button>
+                                </div>
+                                <button onclick="createPost()" class="btn-primary px-6">
+                                    Post
+                                </button>
+                            </div>
+                            <div id="post-media-preview" class="mt-4 hidden">
+                                <img id="media-preview" class="w-full rounded-xl">
+                                <button onclick="removeMedia()" class="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Feed Posts -->
+                        <div id="feed-posts" class="space-y-6">
+                            <!-- Posts will load here -->
+                        </div>
+                        
+                        <!-- Loading -->
+                        <div id="feed-loading" class="text-center py-8">
+                            <div class="loading-spinner mx-auto"></div>
+                        </div>
+                        
+                        <!-- End of Feed -->
+                        <div id="feed-end" class="text-center py-8 text-gray-400 hidden">
+                            <i class="fas fa-check-circle text-2xl mb-2"></i>
+                            <p>You're all caught up!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Explore Tab -->
+                    <div id="explore-tab" class="tab-pane hidden">
+                        <div class="max-w-6xl mx-auto px-4">
+                            <h2 class="text-2xl font-bold mb-6">Explore</h2>
+                            <div id="explore-content" class="responsive-grid">
+                                <!-- Explore content -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div id="notifications-tab" class="tab-pane hidden max-w-2xl mx-auto px-4">
+                        <div class="glass-effect p-6">
+                            <h2 class="text-2xl font-bold mb-6">Notifications</h2>
+                            <div id="notifications-list">
+                                <!-- Notifications -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Tab -->
+                    <div id="messages-tab" class="tab-pane hidden">
+                        <div class="max-w-6xl mx-auto px-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <!-- Conversations -->
+                                <div class="lg:col-span-1">
+                                    <div class="glass-effect p-6">
+                                        <h2 class="text-2xl font-bold mb-6">Messages</h2>
+                                        <div id="conversations-list">
+                                            <!-- Conversations -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Chat -->
+                                <div class="lg:col-span-2">
+                                    <div class="glass-effect p-6 h-[600px] flex flex-col">
+                                        <div id="chat-header" class="mb-4">
+                                            <!-- Selected chat info -->
+                                        </div>
+                                        <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 mb-4">
+                                            <!-- Messages -->
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="message-input" class="input-field flex-1" placeholder="Type a message...">
+                                            <button onclick="sendMessage()" class="btn-primary px-6">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Tab -->
+                    <div id="profile-tab" class="tab-pane hidden max-w-4xl mx-auto px-4">
+                        <div class="glass-effect p-6">
+                            <!-- Profile Header -->
+                            <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
+                                <div class="relative">
+                                    <div class="w-32 h-32 rounded-full overflow-hidden">
+                                        <img id="profile-avatar" class="w-full h-full object-cover">
+                                    </div>
+                                    <button onclick="editProfilePicture()" class="absolute bottom-2 right-2 w-10 h-10 bg-primary-blue rounded-full flex items-center justify-center">
+                                        <i class="fas fa-camera text-white"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h2 id="profile-name" class="text-2xl font-bold"></h2>
+                                        <span id="profile-verified" class="verified-badge hidden">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                        <button onclick="editProfile()" class="ml-auto px-4 py-2 bg-gray-800 rounded-xl hover:bg-gray-700">
+                                            Edit Profile
+                                        </button>
+                                    </div>
+                                    <p id="profile-username" class="text-gray-400 mb-4"></p>
+                                    
+                                    <div class="flex gap-6 mb-4">
+                                        <button onclick="showFollowers()" class="cursor-pointer">
+                                            <span id="profile-followers" class="font-bold">0</span>
+                                            <span class="text-gray-400">Followers</span>
+                                        </button>
+                                        <button onclick="showFollowing()" class="cursor-pointer">
+                                            <span id="profile-following" class="font-bold">0</span>
+                                            <span class="text-gray-400">Following</span>
+                                        </button>
+                                        <div>
+                                            <span id="profile-posts-count" class="font-bold">0</span>
+                                            <span class="text-gray-400">Posts</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <p id="profile-bio" class="text-gray-300"></p>
+                                </div>
+                            </div>
+                            
+                            <!-- User's Posts -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-4">Posts</h3>
+                                <div id="user-posts" class="responsive-grid">
+                                    <!-- User posts -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tab -->
+                    <div id="settings-tab" class="tab-pane hidden max-w-2xl mx-auto px-4">
+                        <div class="glass-effect p-6">
+                            <h2 class="text-2xl font-bold mb-6">Settings</h2>
+                            <div class="space-y-6">
+                                <!-- Account Settings -->
+                                <div>
+                                    <h3 class="text-lg font-bold mb-4">Account</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-400 mb-2">Email</label>
+                                            <div class="flex items-center gap-4">
+                                                <span id="settings-email" class="flex-1"></span>
+                                                <button onclick="changeEmail()" class="px-4 py-2 bg-gray-800 rounded-xl">Change</button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm text-gray-400 mb-2
