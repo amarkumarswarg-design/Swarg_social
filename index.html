@@ -984,4 +984,317 @@
     
     <!-- JavaScript -->
     <script>
-        // ========== GLOBAL STATE
+        // ========== GLOBAL STATE ==========
+        let currentUser = null;
+        let allUsers = [];
+        let allPosts = [];
+        let notifications = [];
+        let messages = [];
+        let currentTab = 'feed';
+        
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDatabase();
+            checkAuth();
+            setupEventListeners();
+            loadSampleData();
+        });
+        
+        // ========== DATABASE FUNCTIONS ==========
+        function initializeDatabase() {
+            // Check if database exists
+            if (!localStorage.getItem('swarg_social_users')) {
+                // Create sample users
+                const sampleUsers = [
+                    {
+                        id: 1,
+                        username: 'amar',
+                        fname: 'Amar',
+                        lname: 'Kumar',
+                        email: 'amar@swarg.com',
+                        password: 'password123',
+                        dob: '1990-01-01',
+                        avatar: 'https://ui-avatars.com/api/?name=Amar+Kumar&background=0066ff&color=fff&size=256',
+                        bio: 'Founder & CEO of SWARG Social',
+                        location: 'India',
+                        website: 'https://amar.swarg',
+                        joined: new Date().toISOString(),
+                        followers: 15000,
+                        following: 250,
+                        posts: 45,
+                        verified: true,
+                        private: false
+                    },
+                    {
+                        id: 2,
+                        username: 'tech_guru',
+                        fname: 'Sarah',
+                        lname: 'Johnson',
+                        email: 'sarah@example.com',
+                        password: 'password123',
+                        dob: '1992-05-15',
+                        avatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=9d00ff&color=fff&size=256',
+                        bio: 'Technology enthusiast & developer',
+                        location: 'San Francisco, USA',
+                        website: '',
+                        joined: new Date().toISOString(),
+                        followers: 5400,
+                        following: 1200,
+                        posts: 230,
+                        verified: false,
+                        private: false
+                    },
+                    {
+                        id: 3,
+                        username: 'design_master',
+                        fname: 'Alex',
+                        lname: 'Chen',
+                        email: 'alex@example.com',
+                        password: 'password123',
+                        dob: '1988-11-22',
+                        avatar: 'https://ui-avatars.com/api/?name=Alex+Chen&background=00ff95&color=000&size=256',
+                        bio: 'UI/UX Designer | Creative Director',
+                        location: 'Tokyo, Japan',
+                        website: 'https://alexchen.design',
+                        joined: new Date().toISOString(),
+                        followers: 8900,
+                        following: 450,
+                        posts: 156,
+                        verified: true,
+                        private: false
+                    },
+                    {
+                        id: 4,
+                        username: 'crypto_king',
+                        fname: 'Mike',
+                        lname: 'Rodriguez',
+                        email: 'mike@example.com',
+                        password: 'password123',
+                        dob: '1985-03-30',
+                        avatar: 'https://ui-avatars.com/api/?name=Mike+Rodriguez&background=ff003c&color=fff&size=256',
+                        bio: 'Blockchain developer & crypto trader',
+                        location: 'Dubai, UAE',
+                        website: '',
+                        joined: new Date().toISOString(),
+                        followers: 12300,
+                        following: 800,
+                        posts: 89,
+                        verified: false,
+                        private: false
+                    },
+                    {
+                        id: 5,
+                        username: 'travel_buddy',
+                        fname: 'Lisa',
+                        lname: 'Wang',
+                        email: 'lisa@example.com',
+                        password: 'password123',
+                        dob: '1995-07-08',
+                        avatar: 'https://ui-avatars.com/api/?name=Lisa+Wang&background=00f3ff&color=000&size=256',
+                        bio: 'Travel blogger | Photographer',
+                        location: 'Bali, Indonesia',
+                        website: 'https://lisawang.travel',
+                        joined: new Date().toISOString(),
+                        followers: 6700,
+                        following: 2100,
+                        posts: 312,
+                        verified: true,
+                        private: true
+                    }
+                ];
+                
+                localStorage.setItem('swarg_social_users', JSON.stringify(sampleUsers));
+            }
+            
+            // Check if posts exist
+            if (!localStorage.getItem('swarg_social_posts')) {
+                localStorage.setItem('swarg_social_posts', JSON.stringify([]));
+            }
+            
+            // Check if notifications exist
+            if (!localStorage.getItem('swarg_social_notifications')) {
+                localStorage.setItem('swarg_social_notifications', JSON.stringify([]));
+            }
+            
+            // Check if messages exist
+            if (!localStorage.getItem('swarg_social_messages')) {
+                localStorage.setItem('swarg_social_messages', JSON.stringify([]));
+            }
+            
+            // Check if follows exist
+            if (!localStorage.getItem('swarg_social_follows')) {
+                localStorage.setItem('swarg_social_follows', JSON.stringify([]));
+            }
+            
+            // Load data
+            allUsers = JSON.parse(localStorage.getItem('swarg_social_users') || '[]');
+            allPosts = JSON.parse(localStorage.getItem('swarg_social_posts') || '[]');
+            notifications = JSON.parse(localStorage.getItem('swarg_social_notifications') || '[]');
+            messages = JSON.parse(localStorage.getItem('swarg_social_messages') || '[]');
+        }
+        
+        // ========== AUTH FUNCTIONS ==========
+        function checkAuth() {
+            const loggedInUser = localStorage.getItem('swarg_social_logged_in');
+            if (loggedInUser) {
+                currentUser = JSON.parse(loggedInUser);
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+        
+        function showAuth() {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+        
+        function showApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            updateUserInfo();
+            loadFeed();
+            loadSuggestions();
+            loadTrending();
+            loadOnlineFriends();
+        }
+        
+        function switchAuth(type) {
+            if (type === 'register') {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            } else {
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('login-form').classList.remove('hidden');
+            }
+        }
+        
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Find user
+            const user = allUsers.find(u => 
+                (u.username === username || u.email === username) && 
+                u.password === password
+            );
+            
+            if (user) {
+                // Remove password before storing
+                const { password, ...userWithoutPass } = user;
+                currentUser = userWithoutPass;
+                localStorage.setItem('swarg_social_logged_in', JSON.stringify(userWithoutPass));
+                
+                // Add login notification
+                addNotification({
+                    id: Date.now(),
+                    userId: user.id,
+                    type: 'welcome',
+                    message: 'Welcome back to SWARG Social!',
+                    timestamp: new Date().toISOString(),
+                    read: false
+                });
+                
+                showApp();
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+        
+        function register() {
+            const fname = document.getElementById('reg-fname').value;
+            const lname = document.getElementById('reg-lname').value;
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const dob = document.getElementById('reg-dob').value;
+            const password = document.getElementById('reg-password').value;
+            const terms = document.getElementById('reg-terms').checked;
+            
+            // Validation
+            if (!fname || !lname || !username || !email || !dob || !password) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (!terms) {
+                alert('You must agree to the terms and conditions');
+                return;
+            }
+            
+            if (username.length < 3) {
+                alert('Username must be at least 3 characters long');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long');
+                return;
+            }
+            
+            // Check if username exists
+            if (allUsers.some(u => u.username === username)) {
+                alert('Username already exists');
+                return;
+            }
+            
+            // Check if email exists
+            if (allUsers.some(u => u.email === email)) {
+                alert('Email already registered');
+                return;
+            }
+            
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                username: username.toLowerCase(),
+                fname,
+                lname,
+                email,
+                password,
+                dob,
+                avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fname + ' ' + lname) + '&background=random&color=fff&size=256',
+                bio: '',
+                location: '',
+                website: '',
+                joined: new Date().toISOString(),
+                followers: 0,
+                following: 0,
+                posts: 0,
+                verified: username === 'amar', // Only amar gets verified
+                private: false
+            };
+            
+            // Add to database
+            allUsers.push(newUser);
+            localStorage.setItem('swarg_social_users', JSON.stringify(allUsers));
+            
+            // Remove password before storing
+            const { password: _, ...userWithoutPass } = newUser;
+            currentUser = userWithoutPass;
+            localStorage.setItem('swarg_social_logged_in', JSON.stringify(userWithoutPass));
+            
+            // Add welcome notification
+            addNotification({
+                id: Date.now(),
+                userId: newUser.id,
+                type: 'welcome',
+                message: 'Welcome to SWARG Social! Start connecting with people.',
+                timestamp: new Date().toISOString(),
+                read: false
+            });
+            
+            showApp();
+        }
+        
+        function logout() {
+            localStorage.removeItem('swarg_social_logged_in');
+            currentUser = null;
+            showAuth();
+        }
+        
+        // ========== USER PRO
