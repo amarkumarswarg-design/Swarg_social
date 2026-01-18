@@ -750,4 +750,238 @@
                                                     </div>
                                                     <label class="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" class="sr-only peer" checked>
-                                                        <div class="w-12 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue
+                                                        <div class="w-12 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Notification Settings -->
+                                        <div>
+                                            <h3 class="text-lg font-bold mb-4">Notifications</h3>
+                                            <div class="space-y-4">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="font-medium">Push Notifications</p>
+                                                        <p class="text-sm text-gray-400">Receive notifications in your browser</p>
+                                                    </div>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer" checked>
+                                                        <div class="w-12 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="font-medium">Email Notifications</p>
+                                                        <p class="text-sm text-gray-400">Receive updates via email</p>
+                                                    </div>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer" checked>
+                                                        <div class="w-12 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Danger Zone -->
+                                        <div class="border border-red-500/30 rounded-xl p-4">
+                                            <h3 class="text-lg font-bold mb-4 text-red-400">Danger Zone</h3>
+                                            <div class="space-y-4">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="font-medium">Delete Account</p>
+                                                        <p class="text-sm text-gray-400">Permanently delete your account and all data</p>
+                                                    </div>
+                                                    <button onclick="deleteAccount()" class="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/30 transition">Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Sidebar -->
+                    <aside class="lg:w-80 hidden lg:block">
+                        <div class="glass-effect p-6 sticky top-24">
+                            <!-- Who to Follow -->
+                            <div class="mb-8">
+                                <h4 class="font-bold mb-4 text-gray-300">Who to Follow</h4>
+                                <div id="suggested-users" class="space-y-3">
+                                    <!-- Suggested users will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Trending Posts -->
+                            <div class="mb-8">
+                                <h4 class="font-bold mb-4 text-gray-300">Trending Posts</h4>
+                                <div id="trending-posts" class="space-y-3">
+                                    <!-- Trending posts will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Online Friends -->
+                            <div>
+                                <h4 class="font-bold mb-4 text-gray-300">Online Friends</h4>
+                                <div id="online-friends" class="space-y-3">
+                                    <!-- Online friends will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+            
+            <!-- Bottom Navigation (Mobile) -->
+            <nav class="lg:hidden fixed bottom-0 left-0 right-0 glass-effect border-t border-gray-800">
+                <div class="flex justify-around items-center py-3">
+                    <button onclick="switchTab('feed')" class="flex flex-col items-center text-primary-cyan">
+                        <i class="fas fa-home text-xl"></i>
+                        <span class="text-xs mt-1">Feed</span>
+                    </button>
+                    <button onclick="switchTab('explore')" class="flex flex-col items-center text-gray-400">
+                        <i class="fas fa-compass text-xl"></i>
+                        <span class="text-xs mt-1">Explore</span>
+                    </button>
+                    <button onclick="showCreatePost()" class="flex items-center justify-center w-14 h-14 bg-gradient-to-r from-primary-blue to-primary-cyan rounded-full -mt-8 shadow-lg">
+                        <i class="fas fa-plus text-xl"></i>
+                    </button>
+                    <button onclick="switchTab('notifications')" class="flex flex-col items-center text-gray-400 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="text-xs mt-1">Alerts</span>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button onclick="switchTab('profile')" class="flex flex-col items-center text-gray-400">
+                        <i class="fas fa-user text-xl"></i>
+                        <span class="text-xs mt-1">Profile</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="create-post-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="glass-effect max-w-2xl w-full rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold">Create Post</h3>
+                <button onclick="closeCreatePost()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <textarea id="modal-post-input" class="w-full h-40 px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition resize-none" placeholder="What's on your mind?"></textarea>
+                
+                <div id="post-media-preview" class="hidden">
+                    <div class="relative">
+                        <img id="media-preview-img" class="w-full h-64 object-cover rounded-xl">
+                        <button onclick="removeMedia()" class="absolute top-3 right-3 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="openMediaUpload('photo')" class="flex items-center space-x-2 text-gray-400 hover:text-primary-cyan transition">
+                        <i class="fas fa-image"></i>
+                        <span>Photo</span>
+                    </button>
+                    <button onclick="openMediaUpload('video')" class="flex items-center space-x-2 text-gray-400 hover:text-primary-cyan transition">
+                        <i class="fas fa-video"></i>
+                        <span>Video</span>
+                    </button>
+                    <button class="flex items-center space-x-2 text-gray-400 hover:text-primary-cyan transition">
+                        <i class="fas fa-smile"></i>
+                        <span>Feeling</span>
+                    </button>
+                    <div class="flex-1"></div>
+                    <select class="px-4 py-2 bg-black/30 border border-gray-700 rounded-xl text-white">
+                        <option value="public">🌍 Public</option>
+                        <option value="friends">👥 Friends Only</option>
+                        <option value="private">🔒 Only Me</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeCreatePost()" class="px-6 py-3 bg-gray-800 rounded-xl hover:bg-gray-700 transition">Cancel</button>
+                    <button onclick="submitPost()" class="px-6 py-3 bg-primary-blue rounded-xl hover:bg-blue-600 transition">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="glass-effect max-w-2xl w-full rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold">Edit Profile</h3>
+                <button onclick="closeEditProfile()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto">
+                <div class="text-center">
+                    <div class="relative mx-auto w-32 h-32 mb-4">
+                        <div class="w-full h-full rounded-full bg-gradient-to-r from-primary-cyan to-primary-blue p-1">
+                            <img id="edit-avatar" class="w-full h-full rounded-full object-cover border-4 border-black">
+                        </div>
+                        <button onclick="changeProfilePicture()" class="absolute bottom-0 right-0 w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+                        <input type="text" id="edit-fname" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                        <input type="text" id="edit-lname" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3 text-gray-400">@</span>
+                        <input type="text" id="edit-username" class="w-full pl-8 pr-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Bio</label>
+                    <textarea id="edit-bio" class="w-full h-32 px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition resize-none" placeholder="Tell the world about yourself..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Location</label>
+                        <input type="text" id="edit-location" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition" placeholder="City, Country">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Website</label>
+                        <input type="url" id="edit-website" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition" placeholder="https://">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Date of Birth</label>
+                    <input type="date" id="edit-dob" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-6">
+                    <button onclick="closeEditProfile()" class="px-6 py-3 bg-gray-800 rounded-xl hover:bg-gray-700 transition">Cancel</button>
+                    <button onclick="saveProfile()" class="px-6 py-3 bg-primary-blue rounded-xl hover:bg-blue-600 transition">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // ========== GLOBAL STATE
