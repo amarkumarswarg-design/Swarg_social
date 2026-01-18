@@ -877,4 +877,269 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm text-gray-400 mb-2
+                                            <label class="block text-sm text-gray-400 mb-2">Password</label>
+                                            <button onclick="changePassword()" class="px-4 py-2 bg-gray-800 rounded-xl">Change Password</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Privacy -->
+                                <div>
+                                    <h3 class="text-lg font-bold mb-4">Privacy</h3>
+                                    <div class="space-y-4">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-medium">Private Account</p>
+                                                <p class="text-sm text-gray-400">Only followers can see your posts</p>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" id="private-account">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Danger Zone -->
+                                <div class="border border-red-500/30 rounded-xl p-4">
+                                    <h3 class="text-lg font-bold mb-4 text-red-400">Danger Zone</h3>
+                                    <button onclick="deleteAccount()" class="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/30">
+                                        Delete Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Bottom Navigation (Mobile) -->
+            <nav class="bottom-nav lg:hidden">
+                <div class="flex justify-around items-center">
+                    <button onclick="switchTab('feed')" class="flex flex-col items-center text-primary-cyan">
+                        <i class="fas fa-home text-xl"></i>
+                        <span class="text-xs mt-1">Feed</span>
+                    </button>
+                    <button onclick="switchTab('explore')" class="flex flex-col items-center text-gray-400">
+                        <i class="fas fa-compass text-xl"></i>
+                        <span class="text-xs mt-1">Explore</span>
+                    </button>
+                    <button onclick="showCreatePost()" class="flex items-center justify-center w-14 h-14 btn-primary rounded-full -mt-8">
+                        <i class="fas fa-plus text-xl"></i>
+                    </button>
+                    <button onclick="switchTab('notifications')" class="flex flex-col items-center text-gray-400 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="text-xs mt-1">Alerts</span>
+                        <span id="mobile-notification-count" class="notification-badge hidden">0</span>
+                    </button>
+                    <button onclick="switchTab('profile')" class="flex flex-col items-center text-gray-400">
+                        <i class="fas fa-user text-xl"></i>
+                        <span class="text-xs mt-1">Profile</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="search-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">Search Users</h3>
+                    <button onclick="closeSearchModal()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="relative mb-6">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="modal-search" class="input-field pl-12" placeholder="Search by username..." oninput="searchUsersModal()">
+                </div>
+                <div id="search-results" class="space-y-3">
+                    <!-- Search results -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="create-post-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">Create Post</h3>
+                    <button onclick="closeCreatePostModal()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-6">
+                    <textarea id="modal-post-input" class="input-field h-40 resize-none" placeholder="What's on your mind?"></textarea>
+                    <div id="modal-media-preview" class="mt-4 hidden relative">
+                        <img id="modal-media" class="w-full rounded-xl">
+                        <button onclick="removeModalMedia()" class="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-4 mb-6">
+                    <button onclick="addModalMedia('photo')" class="flex-1 py-3 bg-gray-800 rounded-xl hover:bg-gray-700">
+                        <i class="fas fa-image mr-2"></i> Photo
+                    </button>
+                    <button onclick="addModalMedia('video')" class="flex-1 py-3 bg-gray-800 rounded-xl hover:bg-gray-700">
+                        <i class="fas fa-video mr-2"></i> Video
+                    </button>
+                </div>
+                <button onclick="createPostFromModal()" class="btn-primary w-full py-3">
+                    Post
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="followers-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">Followers</h3>
+                    <button onclick="closeFollowersModal()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="followers-list" class="space-y-3">
+                    <!-- Followers list -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="following-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">Following</h3>
+                    <button onclick="closeFollowingModal()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="following-list" class="space-y-3">
+                    <!-- Following list -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="edit-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">Edit Profile</h3>
+                    <button onclick="closeEditProfileModal()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-5">
+                    <div class="text-center">
+                        <div class="relative inline-block mb-4">
+                            <div class="w-32 h-32 rounded-full overflow-hidden">
+                                <img id="edit-profile-avatar" class="w-full h-full object-cover">
+                            </div>
+                            <button onclick="changeProfilePicture()" class="absolute bottom-2 right-2 w-10 h-10 bg-primary-blue rounded-full flex items-center justify-center">
+                                <i class="fas fa-camera text-white"></i>
+                            </button>
+                        </div>
+                        <input type="file" id="edit-avatar-input" class="hidden" accept="image/*" onchange="updateProfilePicture(event)">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="edit-fname" class="input-field" placeholder="First name">
+                        <input type="text" id="edit-lname" class="input-field" placeholder="Last name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Username (cannot be changed)</label>
+                        <input type="text" id="edit-username" class="input-field bg-gray-800" disabled>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Bio</label>
+                        <textarea id="edit-bio" class="input-field h-32 resize-none" placeholder="Tell about yourself..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Location</label>
+                        <input type="text" id="edit-location" class="input-field" placeholder="City, Country">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Website</label>
+                        <input type="url" id="edit-website" class="input-field" placeholder="https://">
+                    </div>
+                    
+                    <div class="flex gap-4 pt-4">
+                        <button onclick="closeEditProfileModal()" class="flex-1 py-3 bg-gray-800 rounded-xl hover:bg-gray-700">
+                            Cancel
+                        </button>
+                        <button onclick="saveProfile()" class="flex-1 py-3 btn-primary">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // ========== GLOBAL STATE ==========
+        let currentUser = null;
+        let users = [];
+        let posts = [];
+        let notifications = [];
+        let messages = [];
+        let follows = [];
+        let currentTab = 'feed';
+        let selectedChat = null;
+        
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            initDatabase();
+            checkAuth();
+            setupEventListeners();
+            setupServiceWorker();
+        });
+        
+        // ========== DATABASE FUNCTIONS ==========
+        function initDatabase() {
+            // Initialize empty database if not exists
+            if (!localStorage.getItem('swarg_users')) {
+                localStorage.setItem('swarg_users', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('swarg_posts')) {
+                localStorage.setItem('swarg_posts', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('swarg_notifications')) {
+                localStorage.setItem('swarg_notifications', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('swarg_messages')) {
+                localStorage.setItem('swarg_messages', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('swarg_follows')) {
+                localStorage.setItem('swarg_follows', JSON.stringify([]));
+            }
+            
+            // Load data
+            users = JSON.parse(localStorage.getItem('swarg_users') || '[]');
+            posts = JSON.parse(localStorage.getItem('swarg_posts') || '[]');
+            notifications = JSON.parse(localStorage.getItem('swarg_notifications') || '[]');
+            messages = JSON.parse(localStorage.getItem('swarg_messages') || '[]');
+            follows = JSON.parse(localStorage.getItem('swarg_follows') || '[]');
+        }
+        
+        function saveDatabase() {
+            localStorage.setItem('swarg_users', JSON.stringify(users));
+            localStorage.setItem('swarg_posts', JSON.stringify(posts));
+            localStorage.setItem('swarg_notifications', JSON.stringify(notifications));
+            localStorage.setItem('swarg_messages', JSON.stringify(messages));
+            localStorage.setItem('swarg_follows', JSON.stringify(follows));
+        }
+        
+        // ========== AUTHENTICA
