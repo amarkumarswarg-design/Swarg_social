@@ -1563,4 +1563,361 @@
             posts.unshift(newPost);
             saveDatabase();
             
-            // Update user
+            // Update user's posts count
+            const userPosts = posts.filter(p => p.userId === currentUser.id);
+            currentUser.posts = userPosts.length;
+            localStorage.setItem('swarg_current_user', JSON.stringify(currentUser));
+            
+            // Reload feed
+            loadFeed();
+            showToast('Post published!');
+        }
+        
+        function likePost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            const index = post.likes.indexOf(currentUser.id);
+            if (index === -1) {
+                // Like
+                post.likes.push(currentUser.id);
+                
+                // Add notification if not own post
+                if (post.userId !== currentUser.id) {
+                    addNotification({
+                        id: Date.now().toString(),
+                        userId: post.userId,
+                        type: 'like',
+                        fromUserId: currentUser.id,
+                        fromUsername: currentUser.username,
+                        postId: postId,
+                        message: `${currentUser.fname} liked your post`,
+                        timestamp: new Date().toISOString(),
+                        read: false
+                    });
+                }
+            } else {
+                // Unlike
+                post.likes.splice(index, 1);
+            }
+            
+            saveDatabase();
+            loadFeed(); // Reload feed to update likes
+            
+            // If on profile tab, reload user posts
+            if (currentTab === 'profile') {
+                loadUserPosts();
+            }
+        }
+        
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const comment = input.value.trim();
+            
+            if (!comment) return;
+            
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            const newComment = {
+                id: Date.now().toString(),
+                userId: currentUser.id,
+                username: currentUser.username,
+                userAvatar: currentUser.avatar,
+                userName: `${currentUser.fname} ${currentUser.lname}`,
+                content: comment,
+                timestamp: new Date().toISOString()
+            };
+            
+            post.comments.push(newComment);
+            saveDatabase();
+            
+            // Add notification if not own post
+            if (post.userId !== currentUser.id) {
+                addNotification({
+                    id: Date.now().toString(),
+                    userId: post.userId,
+                    type: 'comment',
+                    fromUserId: currentUser.id,
+                    fromUsername: currentUser.username,
+                    postId: postId,
+                    message: `${currentUser.fname} commented on your post`,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                });
+            }
+            
+            input.value = '';
+            loadFeed(); // Reload to show comment
+            
+            // If on profile tab, reload user posts
+            if (currentTab === 'profile') {
+                loadUserPosts();
+            }
+            
+            updateNotificationCounts();
+        }
+        
+        // ========== FEED SYSTEM ==========
+        function loadFeed() {
+            const feed = document.getElementById('feed-posts');
+            const loading = document.getElementById('feed-loading');
+            const end = document.getElementById('feed-end');
+            
+            loading.classList.remove('hidden');
+            end.classList.add('hidden');
+            feed.innerHTML = '';
+            
+            setTimeout(() => {
+                // Get public posts from all users
+                const publicPosts = posts.filter(p => 
+                    p.privacy === 'public' || p.userId === currentUser.id
+                ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                if (publicPosts.length === 0) {
+                    feed.innerHTML = `
+                        <div class="text-center py-12 text-gray-400">
+                            <i class="fas fa-newspaper text-4xl mb-4"></i>
+                            <p>No posts yet. Be the first to post!</p>
+                        </div>
+                    `;
+                } else {
+                    publicPosts.forEach(post => {
+                        const postElement = createPostElement(post);
+                        feed.appendChild(postElement);
+                    });
+                }
+                
+                loading.classList.add('hidden');
+                if (publicPosts.length > 0) {
+                    end.classList.remove('hidden');
+                }
+            }, 500);
+        }
+        
+        function createPostElement(post) {
+            const user = users.find(u => u.id === post.userId);
+            const timeAgo = getTimeAgo(post.timestamp);
+            const isLiked = post.likes.includes(currentUser.id);
+            const likeCount = post.likes.length;
+            const commentCount = post.comments.length;
+            
+            const element = document.createElement('div');
+            element.className = 'post-card p-6';
+            element.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full overflow-hidden">
+                            <img src="${post.userAvatar}" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="flex items-center">
+                                <h4 class="font-bold">${post.userName}</h4>
+                                ${user && user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+                            </div>
+                            <p class="text-gray-400 text-sm">@${post.username} • ${timeAgo}</p>
+                        </div>
+                    </div>
+                    <button class="text-gray-400 hover:text-white">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-gray-300 whitespace-pre-line">${escapeHtml(post.content)}</p>
+                    ${post.media ? `
+                        <div class="mt-4 rounded-xl overflow-hidden">
+                            <img src="${post.media}" class="w-full max-h-96 object-cover" onclick="viewImage('${post.media}')">
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="flex items-center justify-between text-gray-400">
+                    <div class="flex items-center gap-6">
+                        <button onclick="likePost('${post.id}')" class="flex items-center gap-2 ${isLiked ? 'text-red-400' : 'hover:text-red-400'}">
+                            <i class="fas fa-heart ${isLiked ? 'fas' : 'far'}"></i>
+                            <span>${likeCount}</span>
+                        </button>
+                        <button onclick="toggleComments('${post.id}')" class="flex items-center gap-2 hover:text-primary-cyan">
+                            <i class="far fa-comment"></i>
+                            <span>${commentCount}</span>
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-green-400">
+                            <i class="far fa-share-square"></i>
+                            <span>${post.shares}</span>
+                        </button>
+                    </div>
+                    <button class="hover:text-yellow-400">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                
+                <div id="comments-${post.id}" class="mt-4 pt-4 border-t border-gray-800 hidden">
+                    <div class="space-y-4 mb-4">
+                        ${post.comments.map(comment => `
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                    <img src="${comment.userAvatar}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-bold text-sm">${comment.userName}</span>
+                                        <span class="text-gray-400 text-xs">${getTimeAgo(comment.timestamp)}</span>
+                                    </div>
+                                    <p class="text-gray-300 text-sm">${escapeHtml(comment.content)}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                            <img src="${currentUser.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        <input type="text" id="comment-input-${post.id}" class="input-field flex-1" placeholder="Write a comment..." onkeypress="if(event.key === 'Enter') addComment('${post.id}')">
+                        <button onclick="addComment('${post.id}')" class="btn-primary px-4 py-2">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return element;
+        }
+        
+        function toggleComments(postId) {
+            const commentsDiv = document.getElementById(`comments-${postId}`);
+            commentsDiv.classList.toggle('hidden');
+        }
+        
+        // ========== FOLLOW SYSTEM ==========
+        function followUser(userId) {
+            // Check if already following
+            const alreadyFollowing = follows.some(f => 
+                f.followerId === currentUser.id && f.followingId === userId
+            );
+            
+            if (alreadyFollowing) {
+                // Unfollow
+                follows = follows.filter(f => 
+                    !(f.followerId === currentUser.id && f.followingId === userId)
+                );
+            } else {
+                // Follow
+                follows.push({
+                    id: Date.now().toString(),
+                    followerId: currentUser.id,
+                    followingId: userId,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Add notification
+                const userToFollow = users.find(u => u.id === userId);
+                if (userToFollow) {
+                    addNotification({
+                        id: Date.now().toString(),
+                        userId: userId,
+                        type: 'follow',
+                        fromUserId: currentUser.id,
+                        fromUsername: currentUser.username,
+                        message: `${currentUser.fname} started following you`,
+                        timestamp: new Date().toISOString(),
+                        read: false
+                    });
+                }
+            }
+            
+            saveDatabase();
+            updateUserInfo();
+            updateNotificationCounts();
+            
+            // Update UI if in search
+            if (currentTab === 'search' || document.getElementById('search-modal').classList.contains('hidden') === false) {
+                searchUsersModal();
+            }
+            
+            showToast(alreadyFollowing ? 'Unfollowed' : 'Followed');
+        }
+        
+        function showFollowers() {
+            const followers = follows.filter(f => f.followingId === currentUser.id);
+            const modal = document.getElementById('followers-modal');
+            const list = document.getElementById('followers-list');
+            
+            list.innerHTML = '';
+            
+            if (followers.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-center py-8">No followers yet</p>';
+            } else {
+                followers.forEach(follow => {
+                    const user = users.find(u => u.id === follow.followerId);
+                    if (user) {
+                        const element = createUserListItem(user, true);
+                        list.appendChild(element);
+                    }
+                });
+            }
+            
+            showModal('followers-modal');
+        }
+        
+        function showFollowing() {
+            const following = follows.filter(f => f.followerId === currentUser.id);
+            const modal = document.getElementById('following-modal');
+            const list = document.getElementById('following-list');
+            
+            list.innerHTML = '';
+            
+            if (following.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-center py-8">Not following anyone yet</p>';
+            } else {
+                following.forEach(follow => {
+                    const user = users.find(u => u.id === follow.followingId);
+                    if (user) {
+                        const element = createUserListItem(user, true);
+                        list.appendChild(element);
+                    }
+                });
+            }
+            
+            showModal('following-modal');
+        }
+        
+        function createUserListItem(user, showFollowButton = true) {
+            const isFollowing = follows.some(f => 
+                f.followerId === currentUser.id && f.followingId === user.id
+            );
+            const isCurrentUser = user.id === currentUser.id;
+            
+            const element = document.createElement('div');
+            element.className = 'flex items-center justify-between p-4 hover:bg-white/5 rounded-xl';
+            element.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full overflow-hidden">
+                        <img src="${user.avatar}" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <div class="flex items-center">
+                            <h4 class="font-bold">${user.fname} ${user.lname}</h4>
+                            ${user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+                        </div>
+                        <p class="text-gray-400 text-sm">@${user.username}</p>
+                    </div>
+                </div>
+                ${showFollowButton && !isCurrentUser ? `
+                    <button onclick="followUser('${user.id}')" class="px-4 py-2 ${isFollowing ? 'bg-gray-800 hover:bg-gray-700' : 'btn-primary'} rounded-xl">
+                        ${isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                ` : ''}
+            `;
+            
+            // Add click to view profile
+            element.addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    viewUserProfile(user.id);
+                }
+            });
+            
+            return element;
+        }
+        
+        // ========== SEARC
