@@ -1,1 +1,405 @@
-a
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWARG Social | Next-Gen Social Platform</title>
+    
+    <!-- Resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    
+    <style>
+        /* ========== GLOBAL STYLES ========== */
+        :root {
+            --swarg-black: #000000;
+            --swarg-dark: #0a0a0a;
+            --swarg-darker: #050505;
+            --primary-blue: #0066ff;
+            --primary-cyan: #00f3ff;
+            --primary-purple: #9d00ff;
+            --accent-green: #00ff95;
+            --accent-red: #ff003c;
+            --accent-yellow: #ffcc00;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --glass-bg: rgba(15, 20, 30, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--swarg-black);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* ========== CUSTOM SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-cyan);
+        }
+        
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* ========== UTILITY CLASSES ========== */
+        .glass-effect {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .post-card {
+            background: rgba(20, 25, 40, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .post-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.2);
+        }
+        
+        /* ========== LOADING ANIMATION ========== */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ========== RESPONSIVE GRID ========== */
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        /* ========== NOTIFICATION BADGE ========== */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* ========== CUSTOM CHECKBOX ========== */
+        .custom-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-blue);
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .custom-checkbox:checked {
+            background: var(--primary-blue);
+        }
+        
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* ========== PROGRESS BAR ========== */
+        .upload-progress {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .upload-progress-fill {
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app" class="min-h-screen">
+        <!-- Auth Screens -->
+        <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+            <div class="glass-effect p-8 md:p-12 max-w-md w-full">
+                <!-- Logo -->
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl font-black mb-2" style="font-family: 'Montserrat', sans-serif;">
+                        <span class="gradient-text">SWARG</span> <span class="text-white">Social</span>
+                    </h1>
+                    <p class="text-gray-400 text-sm">Next-generation social platform</p>
+                </div>
+                
+                <!-- Auth Forms -->
+                <div id="login-form">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Username or Email</label>
+                            <input type="text" id="login-username" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition" placeholder="@username">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <input type="password" id="login-password" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition" placeholder="••••••••">
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="custom-checkbox mr-2">
+                                <span class="text-sm text-gray-400">Remember me</span>
+                            </label>
+                            <button class="text-sm text-primary-cyan hover:text-primary-blue transition">Forgot password?</button>
+                        </div>
+                        
+                        <button onclick="login()" class="w-full py-3 bg-gradient-to-r from-primary-blue to-primary-cyan text-white font-bold rounded-xl hover:opacity-90 transition">
+                            Sign In
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-400">Don't have an account? <button onclick="switchAuth('register')" class="text-primary-cyan hover:text-primary-blue transition">Sign Up</button></p>
+                    </div>
+                </div>
+                
+                <!-- Register Form (Hidden by default) -->
+                <div id="register-form" class="hidden">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+                                <input type="text" id="reg-fname" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                                <input type="text" id="reg-lname" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-gray-400">@</span>
+                                <input type="text" id="reg-username" class="w-full pl-8 pr-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                            </div>
+                            <p id="username-hint" class="text-xs text-gray-500 mt-1"></p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                            <input type="email" id="reg-email" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Date of Birth</label>
+                            <input type="date" id="reg-dob" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <input type="password" id="reg-password" class="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition">
+                            <div class="mt-2">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-1/4 h-1 rounded-full bg-red-500" id="pw-strength-1"></div>
+                                    <div class="w-1/4 h-1 rounded-full bg-gray-600" id="pw-strength-2"></div>
+                                    <div class="w-1/4 h-1 rounded-full bg-gray-600" id="pw-strength-3"></div>
+                                    <div class="w-1/4 h-1 rounded-full bg-gray-600" id="pw-strength-4"></div>
+                                </div>
+                                <p id="pw-hint" class="text-xs text-gray-500 mt-1"></p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Profile Picture</label>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-600">
+                                    <img id="profile-preview" class="w-full h-full object-cover hidden">
+                                    <i class="fas fa-user text-gray-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <label class="cursor-pointer">
+                                        <input type="file" id="reg-avatar" class="hidden" accept="image/*">
+                                        <div class="px-4 py-2 bg-gray-800 rounded-xl hover:bg-gray-700 transition">Upload Photo</div>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF • Max 5MB</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="reg-terms" class="custom-checkbox mr-3">
+                            <label for="reg-terms" class="text-sm text-gray-400">
+                                I agree to the <button class="text-primary-cyan hover:text-primary-blue">Terms of Service</button> and <button class="text-primary-cyan hover:text-primary-blue">Privacy Policy</button>
+                            </label>
+                        </div>
+                        
+                        <button onclick="register()" class="w-full py-3 bg-gradient-to-r from-primary-purple to-primary-blue text-white font-bold rounded-xl hover:opacity-90 transition">
+                            Create Account
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-400">Already have an account? <button onclick="switchAuth('login')" class="text-primary-cyan hover:text-primary-blue transition">Sign In</button></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main App (Hidden by default) -->
+        <div id="main-app" class="min-h-screen hidden">
+            <!-- Top Navigation -->
+            <header class="glass-effect sticky top-0 z-50">
+                <div class="container mx-auto px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-3">
+                            <button onclick="showMenu()" class="lg:hidden">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <h1 class="text-2xl font-black">
+                                <span class="gradient-text">SWARG</span>
+                            </h1>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="hidden md:block flex-1 max-w-2xl mx-8">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-4 top-3 text-gray-400"></i>
+                                <input type="text" id="global-search" class="w-full pl-12 pr-4 py-3 bg-black/30 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary-blue transition" placeholder="Search users, posts, or tags...">
+                            </div>
+                        </div>
+                        
+                        <!-- Right Actions -->
+                        <div class="flex items-center space-x-4">
+                            <!-- Create Post Button -->
+                            <button onclick="showCreatePost()" class="hidden md:flex items-center space-x-2 px-4 py-2 bg-primary-blue rounded-xl hover:bg-blue-600 transition">
+                                <i class="fas fa-plus"></i>
+                                <span>Create</span>
+                            </button>
+                            
+                            <!-- Notifications -->
+                            <div class="relative">
+                                <button onclick="showNotifications()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="notification-badge">3</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Messages -->
+                            <div class="relative">
+                                <button onclick="showMessages()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition">
+                                    <i class="fas fa-envelope"></i>
+                                    <span class="notification-badge">5</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Profile Dropdown -->
+                            <div class="relative">
+                                <button onclick="toggleProfileMenu()" class="flex items-center space-x-2">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary-cyan to-primary-blue overflow-hidden">
+                                        <img id="user-avatar" class="w-full h-full object-cover">
+                                    </div>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="profile-menu" class="absolute right-0 top-full mt-2 w-48 glass-effect border border-gray-700 rounded-xl py-2 hidden z-50">
+                                    <a href="#" onclick="switchTab('profile')" class="block px-4 py-2 hover:bg-white/5 transition"><i class="fas fa-user mr-3"></i>My Profile</a>
+                                    <a href="#" onclick="switchTab('settings')" class="block px-4 py-2 hover:bg-white/5 transition"><i class="fas fa-cog mr-3"></i>Settings</a>
+                                    <hr class="my-2 border-gray-700">
+                                    <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-red-500/10 text-red-400 transition"><i class="fas fa-sign-out-alt mr-3"></i>Logout</a>
